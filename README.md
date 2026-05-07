@@ -87,11 +87,9 @@ pod 'CSUSTKit'
 
 ## 贡献
 
-欢迎并鼓励大家为 CSUSTKit 做出贡献，您可以 Fork 项目，进行修改并提交 Pull
+欢迎并鼓励大家为 CSUSTKit 做出贡献，您可以 Fork 项目，进行修改并提交 Pull Request。
 
-如果您在使用过程中遇到问题，或对 CSUSTKit 有任何建议，也欢迎提交 Issue来告知我们！
-
-同时，也可以通过邮箱联系我们：[personal@zhelearn.com](mailto:personal@zhelearn.com)
+如果您在使用过程中遇到问题，或对 CSUSTKit 有任何建议，也欢迎提交 Issue 来告知我们！
 
 ---
 
