@@ -1,4 +1,5 @@
 import CSUSTKit
+import Foundation
 
 func runWebVPNMenu() {
     while true {
@@ -10,9 +11,13 @@ func runWebVPNMenu() {
 
         switch prompt("请选择操作") {
         case "1":
-            let originalURL = promptNonEmpty("请输入原始 URL")
+            let originalURLString = promptNonEmpty("请输入原始 URL")
+            guard let originalURL = URL(string: originalURLString) else {
+                print("URL格式错误")
+                break
+            }
             do {
-                let vpnURL = try WebVPNHelper.encryptURL(originalURL: originalURL)
+                let vpnURL = try WebVPNHelper.encryptURL(originalURL)
                 print("")
                 print("转换结果:")
                 print(vpnURL)
@@ -20,9 +25,13 @@ func runWebVPNMenu() {
                 print("转换失败: \(error)")
             }
         case "2":
-            let vpnURL = promptNonEmpty("请输入 WebVPN URL")
+            let vpnURLString = promptNonEmpty("请输入 WebVPN URL")
+            guard let vpnURL = URL(string: vpnURLString) else {
+                print("URL格式错误")
+                break
+            }
             do {
-                let originalURL = try WebVPNHelper.decryptURL(vpnURL: vpnURL)
+                let originalURL = try WebVPNHelper.decryptURL(vpnURL)
                 print("")
                 print("转换结果:")
                 print(originalURL)
