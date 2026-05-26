@@ -1,9 +1,9 @@
 extension CampusCardHelper {
-    /// 宿舍楼栋
+    /// 楼栋
     public struct Building: BaseModel {
-        /// 宿舍楼栋名称
+        /// 楼栋名称
         public let name: String
-        /// 宿舍楼栋ID
+        /// 楼栋ID
         public let id: String
         /// 所属校区
         public let campus: Campus

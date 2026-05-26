@@ -3,14 +3,15 @@ import Foundation
 
 /// 校园卡助手
 public class CampusCardHelper: BaseHelper {
+    // 身份令牌
+    private var token: String?
+
     private struct BaseResponse<T: Codable & Sendable>: Codable, Sendable {
         let code: Int
         let success: Bool
         let data: T
         let msg: String
     }
-
-    private var token: String?
 
     private struct TokenResponse: Codable {
         let accessToken: String
@@ -89,5 +90,124 @@ public class CampusCardHelper: BaseHelper {
         ]
         let response = try await session.request(factory.make(.campusCard, "/berserker-base/user?synAccessSource=h5"), headers: .init(headers)).decodable(BaseResponse<Profile>.self)
         return response.data
+    }
+
+    private struct BaseQueryResponse<T: Codable & Sendable>: Codable, Sendable {
+        struct MapContainer<U: Codable & Sendable>: Codable {
+            let data: U
+        }
+        let msg: String
+        let code: Int
+        let map: MapContainer<T>
+    }
+
+    private struct BuildingItem: Codable, Sendable {
+        let name: String
+        let value: String
+    }
+
+    private typealias RoomItem = BuildingItem
+
+    struct RoomPowerInfo: Codable, Sendable {
+        let roomId: String
+        let allAmp: String
+        let xiaoquId: String
+        let usedAmp: String
+        let loudongId: String
+
+        enum CodingKeys: String, CodingKey {
+            case roomId = "room_id"
+            case allAmp
+            case xiaoquId = "xiaoqu_id"
+            case usedAmp
+            case loudongId = "loudong_id"
+        }
+    }
+
+    public func getBuildings(campus: Campus) async throws -> [Building] {
+        guard let token else {
+            throw CampusCardHelperError.buildingsRetrievalFailed("无令牌")
+        }
+        let headers = [
+            // base64 of magic string charge:charge_secret
+            "Authorization": "Y2hhcmdlOmNoYXJnZV9zZWNyZXQ=",
+            "synjones-auth": "bearer \(token)",
+        ]
+        let parameters = [
+            "feeitemid": campus.feeItemID,
+            "type": "select",
+            "level": "1",
+            "xiaoqu_id": campus.campusID,
+        ]
+        let response = try await session.request(
+            factory.make(.campusCard, "/charge/feeitem/getThirdData"),
+            method: .post,
+            parameters: parameters,
+            headers: .init(headers)
+        )
+        .decodable(BaseQueryResponse<[BuildingItem]>.self)
+
+        return response.map.data.map { item in
+            Building(name: item.name, id: item.value, campus: campus)
+        }
+    }
+
+    public func getRooms(building: Building) async throws -> [Room] {
+        guard let token else {
+            throw CampusCardHelperError.roomsRetrievalFailed("无令牌")
+        }
+        let headers = [
+            "Authorization": "Y2hhcmdlOmNoYXJnZV9zZWNyZXQ=",
+            "synjones-auth": "bearer \(token)",
+        ]
+        let parameters = [
+            "feeitemid": building.campus.feeItemID,
+            "type": "select",
+            "level": "2",
+            "xiaoqu_id": building.campus.campusID,
+            "loudong_id": building.id,
+        ]
+        let response = try await session.request(
+            factory.make(.campusCard, "/charge/feeitem/getThirdData"),
+            method: .post,
+            parameters: parameters,
+            headers: .init(headers)
+        )
+        .decodable(BaseQueryResponse<[RoomItem]>.self)
+
+        return response.map.data.map { item in
+            Room(name: item.name, id: item.value, building: building)
+        }
+    }
+
+    public func getElectricity(room: Room) async throws -> Double {
+        guard let token else {
+            throw CampusCardHelperError.electricityRetrievalFailed("无令牌")
+        }
+        let headers = [
+            "Authorization": "Y2hhcmdlOmNoYXJnZV9zZWNyZXQ=",
+            "synjones-auth": "bearer \(token)",
+        ]
+        let parameters = [
+            "feeitemid": room.building.campus.feeItemID,
+            "type": "IEC",
+            "level": "3",
+            "xiaoqu_id": room.building.campus.campusID,
+            "loudong_id": room.building.id,
+            "room_id": room.id,
+        ]
+        let response = try await session.request(
+            factory.make(.campusCard, "/charge/feeitem/getThirdData"),
+            method: .post,
+            parameters: parameters,
+            headers: .init(headers)
+        )
+        .decodable(BaseQueryResponse<RoomPowerInfo>.self)
+
+        guard let allValue = Double(response.map.data.allAmp), let usedValue = Double(response.map.data.usedAmp) else {
+            throw CampusCardHelperError.electricityRetrievalFailed("无法解析电量")
+        }
+
+        return allValue - usedValue
     }
 }
