@@ -11,6 +11,8 @@ extension CampusCardHelper {
         case roomsRetrievalFailed(String)
         /// 宿舍电量获取失败
         case electricityRetrievalFailed(String)
+        /// 未登录
+        case notLoggedIn
 
         /// 错误描述
         public var errorDescription: String? {
@@ -23,6 +25,8 @@ extension CampusCardHelper {
                 return "宿舍列表获取失败: \(message)"
             case .electricityRetrievalFailed(let message):
                 return "宿舍电量获取失败: \(message)"
+            case .notLoggedIn:
+                return "校园卡系统未登录"
             }
         }
     }

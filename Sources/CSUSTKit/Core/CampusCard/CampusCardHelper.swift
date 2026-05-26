@@ -6,11 +6,17 @@ public class CampusCardHelper: BaseHelper {
     // 身份令牌
     private var token: String?
 
+    public override func isLoggedIn() async -> Bool {
+        return (try? await getProfile()) != nil
+    }
+
     private struct BaseResponse<T: Codable & Sendable>: Codable, Sendable {
         let code: Int
-        let success: Bool
-        let data: T
-        let msg: String
+        let success: Bool?
+        let data: T?
+        let msg: String?
+        // 错误时字段为message
+        let message: String?
     }
 
     private struct TokenResponse: Codable {
@@ -83,22 +89,31 @@ public class CampusCardHelper: BaseHelper {
 
     public func getProfile() async throws -> Profile {
         guard let token else {
-            throw CampusCardHelperError.profileRetrievalFailed("无令牌")
+            throw CampusCardHelperError.notLoggedIn
         }
         let headers = [
             "synjones-auth": "bearer \(token)"
         ]
         let response = try await session.request(factory.make(.campusCard, "/berserker-base/user?synAccessSource=h5"), headers: .init(headers)).decodable(BaseResponse<Profile>.self)
-        return response.data
+
+        guard response.code != 401 else {
+            throw CampusCardHelperError.notLoggedIn
+        }
+        guard let data = response.data else {
+            throw CampusCardHelperError.profileRetrievalFailed("获取个人信息失败: \(response.message ?? "nil")")
+        }
+        return data
     }
 
     private struct BaseQueryResponse<T: Codable & Sendable>: Codable, Sendable {
         struct MapContainer<U: Codable & Sendable>: Codable {
             let data: U
         }
-        let msg: String
+        let msg: String?
+        // 错误时字段为message
+        let message: String?
         let code: Int
-        let map: MapContainer<T>
+        let map: MapContainer<T>?
     }
 
     private struct BuildingItem: Codable, Sendable {
@@ -126,7 +141,7 @@ public class CampusCardHelper: BaseHelper {
 
     public func getBuildings(campus: Campus) async throws -> [Building] {
         guard let token else {
-            throw CampusCardHelperError.buildingsRetrievalFailed("无令牌")
+            throw CampusCardHelperError.notLoggedIn
         }
         let headers = [
             // base64 of magic string charge:charge_secret
@@ -147,14 +162,21 @@ public class CampusCardHelper: BaseHelper {
         )
         .decodable(BaseQueryResponse<[BuildingItem]>.self)
 
-        return response.map.data.map { item in
+        guard response.code != 401 else {
+            throw CampusCardHelperError.notLoggedIn
+        }
+        guard let map = response.map else {
+            throw CampusCardHelperError.buildingsRetrievalFailed("获取楼栋列表失败: \(response.message ?? "nil")")
+        }
+
+        return map.data.map { item in
             Building(name: item.name, id: item.value, campus: campus)
         }
     }
 
     public func getRooms(building: Building) async throws -> [Room] {
         guard let token else {
-            throw CampusCardHelperError.roomsRetrievalFailed("无令牌")
+            throw CampusCardHelperError.notLoggedIn
         }
         let headers = [
             "Authorization": "Y2hhcmdlOmNoYXJnZV9zZWNyZXQ=",
@@ -175,7 +197,14 @@ public class CampusCardHelper: BaseHelper {
         )
         .decodable(BaseQueryResponse<[RoomItem]>.self)
 
-        return response.map.data.map { item in
+        guard response.code != 401 else {
+            throw CampusCardHelperError.notLoggedIn
+        }
+        guard let map = response.map else {
+            throw CampusCardHelperError.roomsRetrievalFailed("获取宿舍列表失败: \(response.message ?? "nil")")
+        }
+
+        return map.data.map { item in
             Room(name: item.name, id: item.value, building: building)
         }
     }
@@ -204,7 +233,14 @@ public class CampusCardHelper: BaseHelper {
         )
         .decodable(BaseQueryResponse<RoomPowerInfo>.self)
 
-        guard let allValue = Double(response.map.data.allAmp), let usedValue = Double(response.map.data.usedAmp) else {
+        guard response.code != 401 else {
+            throw CampusCardHelperError.notLoggedIn
+        }
+        guard let map = response.map else {
+            throw CampusCardHelperError.electricityRetrievalFailed("获取宿舍电量失败: \(response.message ?? "nil")")
+        }
+
+        guard let allValue = Double(map.data.allAmp), let usedValue = Double(map.data.usedAmp) else {
             throw CampusCardHelperError.electricityRetrievalFailed("无法解析电量")
         }
 
