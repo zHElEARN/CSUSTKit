@@ -85,9 +85,9 @@ public class WebVPNHelper {
 
         var originalPath = String(url.path.dropFirst(prefixToDrop.count))
 
-        if originalPath.isEmpty {
-            originalPath = "/"
-        } else if !originalPath.hasPrefix("/") {
+        if originalPath == "/" {
+            originalPath = ""
+        } else if !originalPath.isEmpty && !originalPath.hasPrefix("/") {
             originalPath = "/\(originalPath)"
         }
 

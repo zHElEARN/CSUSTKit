@@ -1,3 +1,4 @@
+import Foundation
 import Testing
 
 @testable import CSUSTKit
@@ -7,21 +8,21 @@ struct WebVPNTests {
         "验证特定 WebVPN 链接解密为原始 URL",
         arguments: [
             (
-                "https://vpn.csust.edu.cn/http/57524476706e697374686562657374213b080392a9f22f8f5c673ec2dafd24",
-                "http://pt.csust.edu.cn"
+                URL(string: "https://vpn.csust.edu.cn/http/webvpnca1e69080fcc45ac45bed760950fd677/")!,
+                URL(string: "http://pt.csust.edu.cn")!
             ),
             (
-                "https://vpn.csust.edu.cn/http/57524476706e6973746865626573742133170392a9f22f8f5c673ec2dafd24",
-                "http://xk.csust.edu.cn"
+                URL(string: "https://vpn.csust.edu.cn/http/webvpn505c0e70383db2ebb7035169513d1ffa/")!,
+                URL(string: "http://xk.csust.edu.cn")!
             ),
             (
-                "https://vpn.csust.edu.cn/http-8080/57524476706e697374686562657374217a451fdfebb164d5432c6b/index.html",
-                "http://192.168.1.1:8080/index.html"
-            )
+                URL(string: "https://vpn.csust.edu.cn/http/webvpn0290db6ae56290b8883befe06cf1faf082ff567793ebc8ea223c577d2c216af3/index.html")!,
+                URL(string: "http://192.168.1.1:8080/index.html")!
+            ),
         ]
     )
-    func verifyDecryption(vpnURL: String, originalURL: String) throws {
-        let decrypted = try WebVPNHelper.decryptURL(vpnURL: vpnURL)
+    func verifyDecryption(vpnURL: URL, originalURL: URL) throws {
+        let decrypted = try WebVPNHelper.decryptURL(vpnURL)
 
         if decrypted != originalURL {
             print("❌ 解密不匹配")
@@ -36,21 +37,21 @@ struct WebVPNTests {
         "验证原始 URL 加密为特定 WebVPN 链接",
         arguments: [
             (
-                "http://xk.csust.edu.cn",
-                "https://vpn.csust.edu.cn/http/57524476706e6973746865626573742133170392a9f22f8f5c673ec2dafd24"
+                URL(string: "http://xk.csust.edu.cn")!,
+                URL(string: "https://vpn.csust.edu.cn/http/webvpn505c0e70383db2ebb7035169513d1ffa/")!,
             ),
             (
-                "http://pt.csust.edu.cn",
-                "https://vpn.csust.edu.cn/http/57524476706e697374686562657374213b080392a9f22f8f5c673ec2dafd24"
+                URL(string: "http://pt.csust.edu.cn")!,
+                URL(string: "https://vpn.csust.edu.cn/http/webvpnca1e69080fcc45ac45bed760950fd677/")!,
             ),
             (
-                "http://192.168.1.1:8080/index.html",
-                "https://vpn.csust.edu.cn/http-8080/57524476706e697374686562657374217a451fdfebb164d5432c6b/index.html"
-            )
+                URL(string: "http://192.168.1.1:8080/index.html")!,
+                URL(string: "https://vpn.csust.edu.cn/http/webvpn0290db6ae56290b8883befe06cf1faf082ff567793ebc8ea223c577d2c216af3/index.html")!,
+            ),
         ]
     )
-    func verifyEncryption(originalURL: String, expectedVPNURL: String) throws {
-        let encrypted = try WebVPNHelper.encryptURL(originalURL: originalURL)
+    func verifyEncryption(originalURL: URL, expectedVPNURL: URL) throws {
+        let encrypted = try WebVPNHelper.encryptURL(originalURL)
 
         if encrypted != expectedVPNURL {
             print("⚠️ 加密结果不一致")
@@ -65,15 +66,15 @@ struct WebVPNTests {
     @Test(
         "WebVPN 加密解密往返测试",
         arguments: [
-            "http://www.baidu.com",
-            "https://jwc.csust.edu.cn",
-            "http://192.168.1.1:8080/index.html",
-            "https://lofter.com/front/login?id=123",
+            URL(string: "http://www.baidu.com")!,
+            URL(string: "https://jwc.csust.edu.cn")!,
+            URL(string: "http://192.168.1.1:8080/index.html")!,
+            URL(string: "https://lofter.com/front/login?id=123")!,
         ]
     )
-    func verifyRoundTrip(url: String) throws {
-        let encrypted = try WebVPNHelper.encryptURL(originalURL: url)
-        let decrypted = try WebVPNHelper.decryptURL(vpnURL: encrypted)
+    func verifyRoundTrip(url: URL) throws {
+        let encrypted = try WebVPNHelper.encryptURL(url)
+        let decrypted = try WebVPNHelper.decryptURL(encrypted)
 
         #expect(decrypted == url)
     }

@@ -41,7 +41,8 @@ struct SSOTests {
 
         print("🚀 [1/5] 开始登录 SSO (账号: \(self.username))...")
 
-        try await ssoHelper.login(username: self.username, password: self.password)
+        let loginForm = try await ssoHelper.getLoginForm()
+        try await ssoHelper.login(loginForm: loginForm, username: self.username, password: self.password, captcha: nil)
         let ssoUser = try await ssoHelper.getLoginUser()
         #expect(!ssoUser.userName.isEmpty)
         print("✅ SSO 登录成功: \(ssoUser.userName)")
