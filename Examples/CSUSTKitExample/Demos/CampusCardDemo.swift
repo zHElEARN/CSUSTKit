@@ -1,44 +1,42 @@
 import CSUSTKit
 
 func runCampusCardMenu(using campusCardHelper: CampusCardHelper, ticket: String) async {
+    do {
+        try await campusCardHelper.syncToken(ticket: ticket)
+    } catch {
+        print("无法获取token: \(error)")
+        return
+    }
     while true {
         print("")
         print("=== 宿舍电量查询 ===")
-        print("1. getProfile")
-        print("2. syncToken")
+        print("1. 获取用户信息")
+        print("2. 查询电量")
         print("0. 返回上一级")
 
         switch prompt("请选择操作") {
         case "1":
             await handleAsyncOperation {
                 print(try await campusCardHelper.getProfile())
-                // let campus = promptCampus()
-                // let buildings = try await campusCardHelper.getBuildings(for: campus)
-                // guard !buildings.isEmpty else {
-                //     print("\(campus.displayName) 暂无可选楼栋。")
-                //     return
-                // }
-                // guard
-                //     let building = selectIndexedItem(
-                //         title: "\(campus.displayName) 楼栋列表",
-                //         items: buildings,
-                //         display: { $0.name }
-                //     )
-                // else {
-                //     return
-                // }
-                // let room = promptNonEmpty("请输入宿舍号")
-                // let electricity = try await campusCardHelper.getElectricity(building: building, room: room)
-                // print("")
-                // print("查询结果:")
-                // print("校区: \(campus.displayName)")
-                // print("楼栋: \(building.name)")
-                // print("宿舍号: \(room)")
-                // print("剩余电量: \(formatElectricity(electricity)) 度")
             }
         case "2":
             await handleAsyncOperation {
-                try await campusCardHelper.syncToken(ticket: ticket)
+                let campus = promptCampus()
+                let buildings = try await campusCardHelper.getBuildings(campus: campus).sorted { $0.name < $1.name }
+                guard let building = selectIndexedItem(title: "\(campus.displayName) 楼栋列表", items: buildings, display: { $0.name }) else {
+                    return
+                }
+                let rooms = try await campusCardHelper.getRooms(building: building).sorted { $0.name < $1.name }
+                guard let room = selectIndexedItem(title: "\(building.name) 宿舍列表", items: rooms, display: { $0.name }) else {
+                    return
+                }
+                let electricity = try await campusCardHelper.getElectricity(room: room)
+                print("")
+                print("查询结果:")
+                print("校区: \(campus.displayName)")
+                print("楼栋: \(building.name)")
+                print("宿舍号: \(room)")
+                print("剩余电量: \(formatElectricity(electricity)) 度")
             }
         case "0":
             return
