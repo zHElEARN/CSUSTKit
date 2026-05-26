@@ -87,6 +87,9 @@ public class CampusCardHelper: BaseHelper {
         self.token = response.accessToken
     }
 
+    /// 获取个人信息
+    /// - Throws: `CampusCardHelperError`
+    /// - Returns: 个人信息
     public func getProfile() async throws -> Profile {
         guard let token else {
             throw CampusCardHelperError.notLoggedIn
@@ -139,6 +142,10 @@ public class CampusCardHelper: BaseHelper {
         }
     }
 
+    /// 获取楼栋列表
+    /// - Parameter campus: 校区
+    /// - Throws: `CampusCardHelperError`
+    /// - Returns: 楼栋列表
     public func getBuildings(campus: Campus) async throws -> [Building] {
         guard let token else {
             throw CampusCardHelperError.notLoggedIn
@@ -174,6 +181,10 @@ public class CampusCardHelper: BaseHelper {
         }
     }
 
+    /// 获取宿舍列表
+    /// - Parameter building: 楼栋
+    /// - Throws: `CampusCardHelperError`
+    /// - Returns: 宿舍列表
     public func getRooms(building: Building) async throws -> [Room] {
         guard let token else {
             throw CampusCardHelperError.notLoggedIn
@@ -209,6 +220,10 @@ public class CampusCardHelper: BaseHelper {
         }
     }
 
+    /// 获取宿舍电量
+    /// - Parameter room: 宿舍
+    /// - Throws: `CampusCardHelperError`
+    /// - Returns: 宿舍电量
     public func getElectricity(room: Room) async throws -> Double {
         guard let token else {
             throw CampusCardHelperError.electricityRetrievalFailed("无令牌")
