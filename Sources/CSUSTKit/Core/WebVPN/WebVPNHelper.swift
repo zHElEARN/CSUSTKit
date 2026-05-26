@@ -4,8 +4,9 @@ import Foundation
 /// WebVPN 助手
 public class WebVPNHelper {
     private static let host: String = "vpn.csust.edu.cn"
-    private static let key: String = "WRDvpnisthebest!"
-    private static let iv: String = "WRDvpnisthebest!"
+    private static let key: String = "CASB2021EnLink!!"
+    private static let iv: String = "CASB2021EnLink!!"
+    private static let prefix: String = "webvpn"
 
     /// 将原始 URL 加密为 WebVPN URL
     /// - Parameter originalURL: 原始 URL
@@ -24,16 +25,15 @@ public class WebVPNHelper {
         }
 
         guard let url = URL(string: urlString),
-            let originalHost = url.host,
-            var scheme = url.scheme
+            let host = url.host,
+            let scheme = url.scheme
         else {
             throw WebVPNHelperError.urlEncryptionFailed("无效的 URL 或无法获取主机名/协议")
         }
 
+        var originalHost = host
         if let port = url.port {
-            if (scheme == "http" && port != 80) || (scheme == "https" && port != 443) {
-                scheme += "-\(port)"
-            }
+            originalHost += ":\(port)"
         }
 
         let encryptedHost: String
@@ -51,9 +51,9 @@ public class WebVPNHelper {
             pathPart += "#\(fragment)"
         }
 
-        let finalPath = pathPart.isEmpty ? "" : pathPart
+        let finalPath = pathPart.isEmpty ? "/" : pathPart
 
-        return "https://\(self.host)/\(scheme)/\(encryptedHost)\(finalPath)"
+        return "https://\(self.host)/\(scheme)/\(self.prefix)\(encryptedHost)\(finalPath)"
     }
 
     /// 将 WebVPN URL 解密为原始 URL
@@ -71,17 +71,15 @@ public class WebVPNHelper {
             throw WebVPNHelperError.urlDecryptionFailed("WebVPN URL 路径格式不正确")
         }
 
-        var scheme = pathComponents[1]
-        let encryptedHost = pathComponents[2]
+        let scheme = pathComponents[1]
+        let encryptedHostComponent = pathComponents[2]
 
-        var port: Int?
-        if scheme.contains("-") {
-            let components = scheme.split(separator: "-")
-            if components.count == 2 {
-                scheme = String(components[0])
-                port = Int(components[1])
-            }
+        guard encryptedHostComponent.hasPrefix(self.prefix) else {
+            throw WebVPNHelperError.urlDecryptionFailed("未找到指定的 WebVPN 前缀")
         }
+
+        // 剥离 "webvpn" 前缀获取真实加密 Hex
+        let encryptedHost = String(encryptedHostComponent.dropFirst(self.prefix.count))
 
         let decryptedHost: String
         do {
@@ -90,14 +88,14 @@ public class WebVPNHelper {
             throw WebVPNHelperError.urlDecryptionFailed("解密主机名失败: \(error.localizedDescription)")
         }
 
-        let prefixToDrop = "/\(pathComponents[1])/\(encryptedHost)"
+        let prefixToDrop = "/\(pathComponents[1])/\(encryptedHostComponent)"
         guard url.path.hasPrefix(prefixToDrop) else {
             throw WebVPNHelperError.urlDecryptionFailed("URL 路径与预期格式不符")
         }
 
         var originalPath = String(url.path.dropFirst(prefixToDrop.count))
 
-        if originalPath.isEmpty && url.path.hasSuffix("/") {
+        if originalPath.isEmpty {
             originalPath = "/"
         }
 
@@ -108,13 +106,7 @@ public class WebVPNHelper {
             originalPath += "#\(fragment)"
         }
 
-        var result = "\(scheme)://\(decryptedHost)"
-        if let port = port {
-            result += ":\(port)"
-        }
-        result += originalPath
-
-        return result
+        return "\(scheme)://\(decryptedHost)\(originalPath)"
     }
 
     private static func encryptHost(_ text: String) throws -> String {
@@ -130,13 +122,9 @@ public class WebVPNHelper {
         let textBytes = [UInt8](textData)
 
         do {
-            let aes = try AES(key: keyBytes, blockMode: CFB(iv: ivBytes), padding: .noPadding)
-            let paddedTextBytes = textRightAppendBytes(dataBytes: textBytes)
-            let encryptedBytes = try aes.encrypt(paddedTextBytes)
-
-            let hexEncrypted = encryptedBytes.toHexString()
-            let truncatedHex = String(hexEncrypted.prefix(text.count * 2))
-            return ivBytes.toHexString() + truncatedHex
+            let aes = try AES(key: keyBytes, blockMode: CBC(iv: ivBytes), padding: .pkcs7)
+            let encryptedBytes = try aes.encrypt(textBytes)
+            return encryptedBytes.toHexString()
         } catch {
             throw WebVPNHelperError.hostEncryptionFailed("AES加密失败: \(error.localizedDescription)")
         }
@@ -153,18 +141,12 @@ public class WebVPNHelper {
         let ivBytes = [UInt8](ivData)
 
         do {
-            let aes = try AES(key: keyBytes, blockMode: CFB(iv: ivBytes), padding: .noPadding)
-            let ivHexLen = ivBytes.toHexString().count
-            let encryptedPartHex = String(hexText.dropFirst(ivHexLen))
-            let originalTextLength = encryptedPartHex.count / 2
-            let paddedHexPayload = textRightAppendHex(hexString: encryptedPartHex)
-
-            let encryptedBytes = [UInt8](hex: paddedHexPayload)
+            let aes = try AES(key: keyBytes, blockMode: CBC(iv: ivBytes), padding: .pkcs7)
+            let encryptedBytes = [UInt8](hex: hexText)
 
             let decryptedBytes = try aes.decrypt(encryptedBytes)
 
-            let truncatedBytes = Array(decryptedBytes.prefix(originalTextLength))
-            guard let result = String(bytes: truncatedBytes, encoding: .utf8) else {
+            guard let result = String(bytes: decryptedBytes, encoding: .utf8) else {
                 throw WebVPNHelperError.hostDecryptionFailed("解密后无法转换为字符串")
             }
             return result
@@ -173,18 +155,5 @@ public class WebVPNHelper {
         } catch {
             throw WebVPNHelperError.hostDecryptionFailed("AES解密失败: \(error.localizedDescription)")
         }
-    }
-
-    private static func textRightAppendBytes(dataBytes: [UInt8], segmentByteSize: Int = 16) -> [UInt8] {
-        let paddingLen = segmentByteSize - (dataBytes.count % segmentByteSize)
-        if paddingLen == segmentByteSize { return dataBytes }
-        let padding = [UInt8](repeating: 48, count: paddingLen)  // "0" 的 ASCII 值
-        return dataBytes + padding
-    }
-
-    private static func textRightAppendHex(hexString: String, segmentHexSize: Int = 32) -> String {
-        let paddingLen = segmentHexSize - (hexString.count % segmentHexSize)
-        if paddingLen == segmentHexSize { return hexString }
-        return hexString + String(repeating: "0", count: paddingLen)
     }
 }
