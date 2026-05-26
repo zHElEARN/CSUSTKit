@@ -34,15 +34,15 @@ extension ServiceDomain {
     var vpnHex: String {
         switch self {
         case .authServer:
-            return "57524476706e697374686562657374212a095999a9e22e8d177074d487eb39946bea82e470fa4c"
+            return "b9fbab94ec37584ef499d74673ec2c940949105c7b30eca147702d9482299f99"
         case .ehall:
-            return "57524476706e697374686562657374212e144c9db6a93f8807712e9991fa3fceb2f8"
+            return "1e2b5c384f0dc42e4d0db781d590f8e2f8f129ae812718586ddba3948db7b103"
         case .mooc:
-            return "57524476706e697374686562657374213b080392a9f22f8f5c673ec2dafd24"
+            return "ca1e69080fcc45ac45bed760950fd677"
         case .education:
-            return "57524476706e6973746865626573742133170392a9f22f8f5c673ec2dafd24"
+            return "505c0e70383db2ebb7035169513d1ffa"
         case .physicsExperiment:
-            return "57524476706e697374686562657374217a4c03c3efb272cd472c6f85"
+            return "ee536efb7808aac9b0bc36403333c380"
         }
     }
 }

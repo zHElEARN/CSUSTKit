@@ -94,7 +94,7 @@ public class SSOHelper: BaseHelper {
         var checkURL: URL = finalURL
 
         if mode == .webVpn {
-            guard finalURL == URL("https://vpn.csust.edu.cn/login") else {
+            guard finalURL == URL("https://vpn.csust.edu.cn/enclient/") else {
                 if let responseString = response.value {
                     let document = try SwiftSoup.parse(responseString)
                     if let errorElement = try document.select("#showErrorTip").first() {
@@ -103,7 +103,7 @@ public class SSOHelper: BaseHelper {
                 }
                 throw SSOHelperError.loginFailed("登录失败: \(finalURL)")
             }
-            let checkResponse = await session.request("https://vpn.csust.edu.cn/login?cas_login=true").stringResponse()
+            let checkResponse = await session.request("https://vpn.csust.edu.cn/enclient/api/users/admin/custom/page/login/sso/cas").stringResponse()
             guard let checkFinalURL = checkResponse.response?.url else {
                 throw SSOHelperError.loginFailed("登录失败: \(finalURL)")
             }

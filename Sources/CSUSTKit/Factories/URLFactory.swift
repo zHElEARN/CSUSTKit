@@ -1,6 +1,7 @@
 public struct URLFactory {
     public let mode: ConnectionMode
     private let vpnBase = "https://vpn.csust.edu.cn"
+    private let prefix = "webvpn"
 
     public init(mode: ConnectionMode) {
         self.mode = mode
@@ -27,7 +28,7 @@ public struct URLFactory {
         case .direct:
             return "\(domain.scheme)://\(domain.directHost)\(safePath)"
         case .webVpn:
-            return "\(vpnBase)/\(domain.scheme)/\(domain.vpnHex)\(safePath)"
+            return "\(vpnBase)/\(domain.scheme)/\(prefix)\(domain.vpnHex)\(safePath)"
         }
     }
 }
