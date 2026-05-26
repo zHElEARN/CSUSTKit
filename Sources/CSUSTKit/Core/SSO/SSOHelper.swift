@@ -170,6 +170,32 @@ public class SSOHelper: BaseHelper {
         return session
     }
 
+    /// 从统一身份认证登录校园卡系统
+    /// - Throws: `SSOHelperError`
+    /// - Returns: 校园卡系统的会话信息
+    @discardableResult
+    public func loginToCampusCard() async throws -> (Session, String) {
+        let request = session.request(factory.make(.campusCard, "/berserker-auth/cas/login/wisedu?targetUrl=https://hxyxh5.csust.edu.cn/plat/?name=loginTransit"))
+        let response = await request.stringResponse()
+        guard let finalURL = response.response?.url else {
+            throw SSOHelperError.loginToCampusCardFailed("未找到重定向URL")
+        }
+        guard finalURL.path == "/plat" && finalURL.host == "hxyxh5.csust.edu.cn" else {
+            throw SSOHelperError.loginToCampusCardFailed("重定向URL异常: \(finalURL)")
+        }
+
+        guard let urlComponents = URLComponents(url: finalURL, resolvingAgainstBaseURL: false),
+            let queryItems = urlComponents.queryItems,
+            let queryItem = queryItems.first(where: { item in item.name == "ticket" }),
+            // URLComponents默认会移除一次百分号编码，不过Ticket进行过两次百分号编码，所以这里还需要移除一次
+            let ticket = queryItem.value?.removingPercentEncoding
+        else {
+            throw SSOHelperError.loginToCampusCardFailed("无法获取登录凭据")
+        }
+
+        return (session, ticket)
+    }
+
     public override func isLoggedIn() async -> Bool {
         return (try? await getLoginUser()) != nil
     }

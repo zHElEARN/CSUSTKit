@@ -3,150 +3,91 @@ import Foundation
 
 /// 校园卡助手
 public class CampusCardHelper: BaseHelper {
-
-    // MARK: - Models
-
-    private struct QueryElecBuilding: Codable {
-        let retcode: String?
-        let errmsg: String?
-        let aid: String
-        let account: String
-        let area: Area
-        var buildingtab: [Building]?
-        struct Area: Codable {
-            let area: String
-            let areaname: String
-        }
-        struct Building: Codable {
-            let buildingid: String
-            let building: String
-        }
+    private struct BaseResponse<T: Codable & Sendable>: Codable, Sendable {
+        let code: Int
+        let success: Bool
+        let data: T
+        let msg: String
     }
 
-    private struct BuildingResponse: Codable {
-        let queryElecBuilding: QueryElecBuilding
+    private var token: String?
+
+    private struct TokenResponse: Codable {
+        let accessToken: String
+        let tokenType: String
+        let refreshToken: String
+        let expiresIn: Int
+        let scope: String
+        let tenantId: String
+        let isFirstLogin: Bool
+        let flag: String
+        let sno: String
+        let logintype: String
+        let name: String
+        let mobile: String
+        let id: Int
+        let loginFrom: String
+        let uuid: String
+        let clientId: String
+        let isPasswordExpired: Bool
+        let jti: String
+
         enum CodingKeys: String, CodingKey {
-            case queryElecBuilding = "query_elec_building"
+            case accessToken = "access_token"
+            case tokenType = "token_type"
+            case refreshToken = "refresh_token"
+            case expiresIn = "expires_in"
+            case scope
+            case tenantId = "tenant_id"
+            case isFirstLogin = "is_first_login"
+            case flag
+            case sno
+            case logintype
+            case name
+            case mobile
+            case id
+            case loginFrom
+            case uuid
+            case clientId = "client_id"
+            case isPasswordExpired = "is_password_expired"
+            case jti
         }
     }
 
-    private struct QueryElecRoomInfo: Codable {
-        let errmsg: String?
-        let aid: String
-        let account: String
-        let room: Room
-        let floor: Floor
-        let area: Area
-        let building: Building
-        struct Room: Codable {
-            let roomid: String
-            let room: String
-        }
-        struct Floor: Codable {
-            let floorid: String
-            let floor: String
-        }
-        struct Area: Codable {
-            let area: String
-            let areaname: String
-        }
-        struct Building: Codable {
-            let buildingid: String
-            let building: String
-        }
-    }
-
-    private struct RoomResponse: Codable {
-        let queryElecRoomInfo: QueryElecRoomInfo
-        enum CodingKeys: String, CodingKey {
-            case queryElecRoomInfo = "query_elec_roominfo"
-        }
-    }
-
-    // MARK: - Methods
-
-    public override func isLoggedIn() async -> Bool {
-        // 无需登录
-        return true
-    }
-
-    /// 获取指定校区的楼栋列表
-    /// - Parameter campus: 校区
-    /// - Throws: `CampusCardHelperError`
-    /// - Returns: 楼栋列表
-    public func getBuildings(for campus: Campus) async throws -> [Building] {
-        let requestData = QueryElecBuilding(
-            retcode: nil,
-            errmsg: nil,
-            aid: campus.id,
-            account: "000001",
-            area: QueryElecBuilding.Area(area: campus.displayName, areaname: campus.displayName),
-            buildingtab: nil
-        )
-        let requestDict = ["query_elec_building": requestData]
-        let jsonEncoder = JSONEncoder()
-        let jsonData = try jsonEncoder.encode(requestDict)
-        guard let jsonString = String(data: jsonData, encoding: .utf8) else {
-            throw CampusCardHelperError.buildingRetrievalFailed("JSON编码失败")
-        }
-        let parameters: [String: String] = [
-            "jsondata": jsonString,
-            "funname": "synjones.onecard.query.elec.building",
-            "json": "true",
+    public func syncToken(ticket: String) async throws {
+        let header = [
+            // base64 of magic string mobile_service_platform:mobile_service_platform_secret
+            "Authorization": "Basic bW9iaWxlX3NlcnZpY2VfcGxhdGZvcm06bW9iaWxlX3NlcnZpY2VfcGxhdGZvcm1fc2VjcmV0"
         ]
-        let responseData = try await session.post("http://yktwd.csust.edu.cn:8988/web/Common/Tsm.html", parameters).decodable(BuildingResponse.self)
-        guard let buildingTab = responseData.queryElecBuilding.buildingtab else {
-            throw CampusCardHelperError.buildingRetrievalFailed("未找到校区 \(campus.displayName) 的楼栋信息")
-        }
-        var buildings: [Building] = []
-        for building in buildingTab {
-            buildings.append(Building(name: building.building, id: building.buildingid, campus: campus))
-        }
-        return buildings
+        let parameters = [
+            "username": ticket,
+            "password": ticket,
+            "grant_type": "password",
+            "scope": "all",
+            "loginFrom": "h5",
+            "logintype": "sso",
+            "device_token": "h5",
+            "synAccessSource": "h5",
+        ]
+        let response = try await session.request(
+            factory.make(.campusCard, "/berserker-auth/oauth/token"),
+            method: .post,
+            parameters: parameters,
+            encoding: URLEncoding.default,
+            headers: .init(header)
+        ).decodable(TokenResponse.self)
+
+        self.token = response.accessToken
     }
 
-    /// 获取指定宿舍的剩余电量
-    /// - Parameters:
-    ///   - building: 宿舍所在楼栋
-    ///   - room: 宿舍号
-    /// - Throws: `CampusCardHelperError`
-    /// - Returns: 剩余电量（单位：度）
-    public func getElectricity(building: Building, room: String) async throws -> Double {
-        let requestData = QueryElecRoomInfo(
-            errmsg: nil,
-            aid: building.campus.id,
-            account: "000001",
-            room: QueryElecRoomInfo.Room(roomid: room, room: room),
-            floor: QueryElecRoomInfo.Floor(floorid: "", floor: ""),
-            area: QueryElecRoomInfo.Area(area: building.campus.displayName, areaname: building.campus.displayName),
-            building: QueryElecRoomInfo.Building(buildingid: building.id, building: "")
-        )
-        let requestDict = ["query_elec_roominfo": requestData]
-        let jsonEncoder = JSONEncoder()
-        let jsonData = try jsonEncoder.encode(requestDict)
-        guard let jsonString = String(data: jsonData, encoding: .utf8) else {
-            throw CampusCardHelperError.electricityRetrievalFailed("JSON编码失败")
+    public func getProfile() async throws -> Profile {
+        guard let token else {
+            throw CampusCardHelperError.profileRetrievalFailed("无令牌")
         }
-        let parameters: [String: String] = [
-            "jsondata": jsonString,
-            "funname": "synjones.onecard.query.elec.roominfo",
-            "json": "true",
+        let headers = [
+            "synjones-auth": "bearer \(token)"
         ]
-        let responseData = try await session.post("http://yktwd.csust.edu.cn:8988/web/Common/Tsm.html", parameters).decodable(RoomResponse.self)
-        guard let errmsg = responseData.queryElecRoomInfo.errmsg else {
-            throw CampusCardHelperError.electricityRetrievalFailed("未找到错误信息")
-        }
-        let pattern = #"(\d+(\.\d+)?)"#
-        guard let regex = try? NSRegularExpression(pattern: pattern, options: []),
-            let match = regex.firstMatch(in: errmsg, options: [], range: NSRange(location: 0, length: errmsg.utf16.count)),
-            let range = Range(match.range(at: 1), in: errmsg)
-        else {
-            throw CampusCardHelperError.electricityRetrievalFailed("未能在信息中找到电费数值: \(errmsg)")
-        }
-        let electricityString = String(errmsg[range])
-        guard let electricity = Double(electricityString) else {
-            throw CampusCardHelperError.electricityRetrievalFailed("无法从信息中解析电费数值: \(errmsg)")
-        }
-        return electricity
+        let response = try await session.request(factory.make(.campusCard, "/berserker-base/user?synAccessSource=h5"), headers: .init(headers)).decodable(BaseResponse<Profile>.self)
+        return response.data
     }
 }
