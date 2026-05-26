@@ -86,28 +86,37 @@ private func performSSOLogin(using ssoHelper: SSOHelper) async -> Bool {
 private func runMainMenu(using ssoHelper: SSOHelper, connectionMode: ConnectionMode, session: Session) async {
     let moocHelper = MoocHelper(mode: connectionMode, session: session)
     let eduHelper = EduHelper(mode: connectionMode, session: session)
+    let campusCardHelper = CampusCardHelper(mode: connectionMode, session: session)
 
     while true {
         print("")
         print("=== 主菜单 ===")
         print("1. 网络课程中心")
         print("2. 教务系统")
+        print("3. 校园卡系统")
         print("0. 返回入口菜单")
 
         switch prompt("请选择操作") {
         case "1":
             do {
-                _ = try await ssoHelper.loginToMooc()
+                try await ssoHelper.loginToMooc()
                 await runMoocMenu(using: moocHelper)
             } catch {
                 print("进入网络课程中心失败: \(error)")
             }
         case "2":
             do {
-                _ = try await ssoHelper.loginToEducation()
+                try await ssoHelper.loginToEducation()
                 await runEducationMenu(using: eduHelper)
             } catch {
                 print("进入教务系统失败: \(error)")
+            }
+        case "3":
+            do {
+                let (_, ticket) = try await ssoHelper.loginToCampusCard()
+                await runCampusCardMenu(using: campusCardHelper, ticket: ticket)
+            } catch {
+                print("进入校园卡系统失败: \(error)")
             }
         case "0":
             return
