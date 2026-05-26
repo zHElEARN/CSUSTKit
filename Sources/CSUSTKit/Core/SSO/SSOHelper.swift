@@ -180,7 +180,7 @@ public class SSOHelper: BaseHelper {
         guard let finalURL = response.response?.url else {
             throw SSOHelperError.loginToCampusCardFailed("未找到重定向URL")
         }
-        guard finalURL.path == "/plat" && finalURL.host == "hxyxh5.csust.edu.cn" else {
+        guard finalURL.absoluteString.starts(with: factory.make(.campusCard, "/plat")) else {
             throw SSOHelperError.loginToCampusCardFailed("重定向URL异常: \(finalURL)")
         }
 
