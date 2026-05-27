@@ -4,7 +4,7 @@ import Foundation
 /// 校园卡助手
 public class CampusCardHelper: BaseHelper {
     // 身份令牌
-    private var token: String?
+    private(set) var token: String?
 
     public override func isLoggedIn() async -> Bool {
         return (try? await getProfile()) != nil
