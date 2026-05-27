@@ -261,4 +261,11 @@ public class CampusCardHelper: BaseHelper {
 
         return allValue - usedValue
     }
+
+    /// 登出
+    public func logout() async throws {
+        try await session.request(factory.make(.campusCard, "/berserker-base/redirect?type=logout&synjones-auth=\(token ?? "")&loginFrom=h5&synAccessSource=h5")).data()
+        // 以防万一
+        token = nil
+    }
 }

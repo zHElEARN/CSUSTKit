@@ -12,6 +12,7 @@ func runCampusCardMenu(using campusCardHelper: CampusCardHelper, ticket: String)
         print("=== 宿舍电量查询 ===")
         print("1. 获取用户信息")
         print("2. 查询电量")
+        print("3. 退出")
         print("0. 返回上一级")
 
         switch prompt("请选择操作") {
@@ -37,6 +38,10 @@ func runCampusCardMenu(using campusCardHelper: CampusCardHelper, ticket: String)
                 print("楼栋: \(building.name)")
                 print("宿舍号: \(room)")
                 print("剩余电量: \(formatElectricity(electricity)) 度")
+            }
+        case "3":
+            await handleAsyncOperation {
+                try await campusCardHelper.logout()
             }
         case "0":
             return
