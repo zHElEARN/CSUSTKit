@@ -226,7 +226,7 @@ public class CampusCardHelper: BaseHelper {
     /// - Returns: 宿舍电量
     public func getElectricity(room: Room) async throws -> Double {
         guard let token else {
-            throw CampusCardHelperError.electricityRetrievalFailed("无令牌")
+            throw CampusCardHelperError.notLoggedIn
         }
         let headers = [
             "Authorization": "Y2hhcmdlOmNoYXJnZV9zZWNyZXQ=",
