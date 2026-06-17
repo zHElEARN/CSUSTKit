@@ -5,6 +5,8 @@ extension EvalHelper {
         case notLoggedIn
         case syncTokenFailed(String)
         case profileRetrievalFailed(String)
+        case evalsRetrievalFailed(String)
+        case evalCoursesRetrievalFailed(String)
 
         public var errorDescription: String? {
             switch self {
@@ -14,6 +16,10 @@ extension EvalHelper {
                 return "获取Token失败: \(message)"
             case .profileRetrievalFailed(let message):
                 return "获取个人信息失败: \(message)"
+            case .evalsRetrievalFailed(let message):
+                return "获取评教列表失败: \(message)"
+            case .evalCoursesRetrievalFailed(let message):
+                return "获取评教课程列表失败: \(message)"
             }
         }
     }
