@@ -15,6 +15,8 @@ extension SSOHelper {
         case loginToMoocFailed(String)
         /// 校园卡系统登录失败
         case loginToCampusCardFailed(String)
+        /// 评教系统登录失败
+        case loginToEvalFailed(String)
         /// 未登录
         case notLoggedIn
 
@@ -33,6 +35,8 @@ extension SSOHelper {
                 return "网络课程中心登录失败: \(message)"
             case .loginToCampusCardFailed(let message):
                 return "校园卡系统登录失败: \(message)"
+            case .loginToEvalFailed(let message):
+                return "评教系统登录失败: \(message)"
             case .notLoggedIn:
                 return "统一身份认证未登录"
             }

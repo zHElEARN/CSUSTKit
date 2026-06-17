@@ -196,6 +196,27 @@ public class SSOHelper: BaseHelper {
         return (session, ticket)
     }
 
+    @discardableResult
+    public func loginToEval() async throws -> (Session, String) {
+        let request = session.request(factory.make(.eval, "/api/manage/cas/toUrl?type=pc"))
+        let response = await request.stringResponse()
+        guard let finalURL = response.response?.url else {
+            throw SSOHelperError.loginToEvalFailed("未找到重定向URL")
+        }
+        guard finalURL.absoluteString.contains("/login/caslogin") else {
+            throw SSOHelperError.loginToEvalFailed("重定向URL异常: \(finalURL)")
+        }
+        guard let urlComponents = URLComponents(url: finalURL, resolvingAgainstBaseURL: false),
+            let queryItems = urlComponents.queryItems,
+            let queryItem = queryItems.first(where: { item in item.name == "userToken" }),
+            let token = queryItem.value
+        else {
+            throw SSOHelperError.loginToEvalFailed("无法获取登录凭据")
+        }
+
+        return (session, token)
+    }
+
     public override func isLoggedIn() async -> Bool {
         return (try? await getLoginUser()) != nil
     }
