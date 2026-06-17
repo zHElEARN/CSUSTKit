@@ -1,5 +1,6 @@
 import Alamofire
 import CSUSTKit
+import DotEnvy
 import Foundation
 
 func runLoginDemo(session: Session) async {
@@ -40,8 +41,15 @@ private func performSSOLogin(using ssoHelper: SSOHelper) async -> Bool {
             print("")
             print("=== 统一认证登录 ===")
 
+            let environment = try? DotEnvironment.make()
+
             let loginForm = try await ssoHelper.getLoginForm()
-            let username = promptNonEmpty("请输入用户名")
+            let username =
+                if let username = environment?["CSUST_AUTHSERVER_USERNAME"] {
+                    username
+                } else {
+                    promptNonEmpty("请输入用户名")
+                }
             let needCaptcha = try await ssoHelper.checkNeedCaptcha(username: username)
 
             var captcha: String?
@@ -54,7 +62,12 @@ private func performSSOLogin(using ssoHelper: SSOHelper) async -> Bool {
                 captcha = promptNonEmpty("请输入验证码")
             }
 
-            let password = promptNonEmpty("请输入密码")
+            let password =
+                if let password = environment?["CSUST_AUTHSERVER_PASSWORD"] {
+                    password
+                } else {
+                    promptNonEmpty("请输入密码")
+                }
             try await ssoHelper.login(
                 loginForm: loginForm,
                 username: username,
