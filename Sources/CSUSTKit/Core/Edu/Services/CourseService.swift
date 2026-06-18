@@ -297,8 +297,8 @@ extension EduHelper {
         /// 获取课程表
         /// - Parameter academicYearSemester: 学年学期，格式为 "2023-2024-1"，如果为 `nil` 则查询默认学期
         /// - Throws: `EduHelperError`
-        /// - Returns: 课程信息数组
-        public func getCourseSchedule(academicYearSemester: String? = nil) async throws -> [Course] {
+        /// - Returns: 课程信息数组和备注数组的元组
+        public func getCourseSchedule(academicYearSemester: String? = nil) async throws -> ([Course], [String]) {
             let queryParams: [String: String] = ["xnxq01id": academicYearSemester ?? ""]
             let response = try await performRequest(factory.make(.education, "/jsxsd/xskb/xskb_list.do"), .post, queryParams)
             let document = try SwiftSoup.parse(response)
@@ -306,7 +306,20 @@ extension EduHelper {
                 throw EduHelperError.courseScheduleRetrievalFailed("未找到课程表")
             }
             var courseDictionary: [String: Course] = [:]
+            var remarks: [String] = []
             let rows = try table.select("tr")
+
+            if let lastRow = rows.last() {
+                let thText = try? lastRow.select("th").first()?.text().trim()
+                if thText?.contains("备注") == true {
+                    if let tdText = try? lastRow.select("td").first()?.text().trim() {
+                        remarks = tdText.components(separatedBy: ";")
+                            .map { $0.trim() }
+                            .filter { !$0.isEmpty }
+                    }
+                }
+            }
+
             for (rowIndex, row) in rows.enumerated() {
                 guard rowIndex > 0 else { continue }
                 guard rowIndex < rows.count - 1 else { continue }
@@ -341,7 +354,7 @@ extension EduHelper {
                     }
                 }
             }
-            return Array(courseDictionary.values)
+            return (Array(courseDictionary.values), remarks)
         }
 
         /// 获取课程表的所有可用学期

@@ -35,8 +35,10 @@ func runEducationMenu(using eduHelper: EduHelper) async {
             }
         case "4":
             await handleAsyncOperation {
-                let courses = try await eduHelper.courseService.getCourseSchedule()
+                let (courses, remarks) = try await eduHelper.courseService.getCourseSchedule()
                 printEducationCourses(courses)
+                print("备注:")
+                print(remarks)
             }
         case "5":
             await handleAsyncOperation {
