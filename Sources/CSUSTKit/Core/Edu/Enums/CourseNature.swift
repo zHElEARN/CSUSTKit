@@ -17,6 +17,8 @@ extension EduHelper {
         case publicElectiveCourse = "公共选修课"
         /// 专业核心课
         case professionalCoreCourse = "专业核心课"
+        /// 跨专业选修课
+        case crossProfessionalElectiveCourse = "跨专业选修课"
         /// 专业集中实践
         case professionalPracticalCourse = "专业集中实践"
 
@@ -39,6 +41,8 @@ extension EduHelper {
                 return "06"
             case .professionalCoreCourse:
                 return "07"
+            case .crossProfessionalElectiveCourse:
+                return "09"
             case .professionalPracticalCourse:
                 return "20"
             }
