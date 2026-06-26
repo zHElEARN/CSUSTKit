@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = 'CSUSTKit'
-  s.version          = '2.1.4'
+  s.version          = '2.1.5'
   s.summary          = 'CSUSTKit 为长沙理工大学学生提供的开发套件。'
   s.homepage         = 'https://github.com/zHElEARN/CSUSTKit'
   s.license          = { :type => 'MIT', :file => 'LICENSE' }
