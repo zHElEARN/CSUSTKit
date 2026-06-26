@@ -51,17 +51,10 @@ extension EduHelper {
                     throw EduHelperError.courseGradesRetrievalFailed("未找到成绩详情URL")
                 }
 
-                if mode == .webVpn {
-                    gradeDetailUrl =
-                        gradeDetailUrl
-                        .replacingOccurrences(of: "javascript:this.top.vpn_inject_scripts_window(this);vpn_eval((function () { openWindow(\'/", with: factory.make(.education, "/"))
-                        .replacingOccurrences(of: "\',700,500) }).toString().slice(14, -2))", with: "")
-                } else {
-                    gradeDetailUrl =
-                        gradeDetailUrl
-                        .replacingOccurrences(of: "javascript:openWindow('", with: "http://xk.csust.edu.cn")
-                        .replacingOccurrences(of: "',700,500)", with: "")
-                }
+                gradeDetailUrl =
+                    gradeDetailUrl
+                    .replacingOccurrences(of: "javascript:openWindow('/", with: factory.make(.education, "/"))
+                    .replacingOccurrences(of: "',700,500)", with: "")
 
                 let studyMode = try cols[6].text().trim()
                 let gradeIdentifier = try cols[7].text().trim()
