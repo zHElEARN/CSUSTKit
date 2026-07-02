@@ -1,8 +1,8 @@
 extension EduHelper {
     /// 课程性质
     public enum CourseNature: String, CaseIterable, BaseModel {
-        /// 其他
-        case other = "其他"
+        /// 其它
+        case other = "其它"
         /// 公共课
         case publicCourse = "公共课"
         /// 公共基础课
