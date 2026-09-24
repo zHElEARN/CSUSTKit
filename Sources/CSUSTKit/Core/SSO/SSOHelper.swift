@@ -170,6 +170,28 @@ public class SSOHelper: BaseHelper {
         return session
     }
 
+    /// 从统一身份认证登录学习通
+    /// - Throws: `SSOHelperError`
+    /// - Returns: 学习通的会话信息
+    @discardableResult
+    public func loginToChaoxing() async throws -> Session {
+        let request = session.request(factory.make(.authServer, "/authserver/login?service=http%3A%2F%2Ffysso.chaoxing.com%2Fsso%2Fcsust"))
+        let response = await request.stringResponse()
+        guard let finalURL = response.response?.url else {
+            throw SSOHelperError.loginToChaoxingFailed("未找到重定向URL")
+        }
+        guard !finalURL.path.contains("/authserver/login") else {
+            throw SSOHelperError.notLoggedIn
+        }
+        // 登录成功后统一落在学校学习通门户的 /portal 上：
+        // 直连是 http://mooc.csust.edu.cn/portal，
+        // WebVPN 下则被网关包成 https://vpn.csust.edu.cn/http/webvpn{加密域名}/portal
+        guard finalURL.path.hasSuffix("/portal") else {
+            throw SSOHelperError.loginToChaoxingFailed("重定向URL异常: \(finalURL)")
+        }
+        return session
+    }
+
     /// 从统一身份认证登录校园卡系统
     /// - Throws: `SSOHelperError`
     /// - Returns: 校园卡系统的会话信息
