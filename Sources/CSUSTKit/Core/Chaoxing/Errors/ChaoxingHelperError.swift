@@ -5,6 +5,8 @@ extension ChaoxingHelper {
     public enum ChaoxingHelperError: Error, LocalizedError {
         /// 个人信息获取失败
         case profileRetrievalFailed(String)
+        /// 作业信息获取失败
+        case assignmentsRetrievalFailed(String)
         /// 未登录
         case notLoggedIn
 
@@ -13,6 +15,8 @@ extension ChaoxingHelper {
             switch self {
             case .profileRetrievalFailed(let message):
                 return "获取个人信息失败: \(message)"
+            case .assignmentsRetrievalFailed(let message):
+                return "获取作业信息失败: \(message)"
             case .notLoggedIn:
                 return "学习通未登录"
             }

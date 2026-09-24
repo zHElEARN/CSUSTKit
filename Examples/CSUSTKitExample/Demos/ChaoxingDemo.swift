@@ -5,6 +5,7 @@ func runChaoxingMenu(using chaoxingHelper: ChaoxingHelper) async {
         print("")
         print("=== 学习通 ===")
         print("1. 查看个人信息")
+        print("2. 查看全部作业")
         print("0. 返回上一级")
 
         switch prompt("请选择操作") {
@@ -13,6 +14,11 @@ func runChaoxingMenu(using chaoxingHelper: ChaoxingHelper) async {
                 let profile = try await chaoxingHelper.getProfile()
                 print("")
                 print("姓名: \(profile.name)")
+            }
+        case "2":
+            await handleAsyncOperation {
+                let assignments = try await chaoxingHelper.getAssignments()
+                printChaoxingAssignments(assignments)
             }
         case "0":
             return

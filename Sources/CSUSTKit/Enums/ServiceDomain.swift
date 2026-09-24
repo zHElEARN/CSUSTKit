@@ -7,12 +7,13 @@ public enum ServiceDomain {
     case eval
     case physicsExperiment
     case chaoxing
+    case chaoxingAPI
 }
 
 extension ServiceDomain {
     var scheme: String {
         switch self {
-        case .authServer, .ehall, .campusCard, .eval, .chaoxing:
+        case .authServer, .ehall, .campusCard, .eval, .chaoxing, .chaoxingAPI:
             return "https"
         case .mooc, .education, .physicsExperiment:
             return "http"
@@ -37,6 +38,8 @@ extension ServiceDomain {
             return "10.255.65.52"
         case .chaoxing:
             return "i.mooc.chaoxing.com"
+        case .chaoxingAPI:
+            return "mooc1-api.chaoxing.com"
         }
     }
 
@@ -58,6 +61,8 @@ extension ServiceDomain {
             return "ee536efb7808aac9b0bc36403333c380"
         case .chaoxing:
             return "05cc0efef664f2f86e16be7e169783e378f442c81ff65a9b669a92968c03bb85"
+        case .chaoxingAPI:
+            return "d529fd82bb238cec8e955f0dcc78df9c9c3b68d58d3df59d4c7d1ec8318c66d6"
         }
     }
 }

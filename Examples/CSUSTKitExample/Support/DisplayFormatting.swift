@@ -62,6 +62,25 @@ func printMoocExams(_ exams: [MoocHelper.Exam], for course: MoocHelper.Course) {
     }
 }
 
+func printChaoxingAssignments(_ assignments: [ChaoxingHelper.Assignment]) {
+    guard !assignments.isEmpty else {
+        print("暂无作业数据。")
+        return
+    }
+
+    print("")
+    print("作业列表（共 \(assignments.count) 条）:")
+    for (index, assignment) in assignments.enumerated() {
+        print("")
+        print("\(index + 1). \(assignment.title)")
+        print("   状态: \(assignment.isCompleted ? "已完成" : "未提交")")
+        print("   课程: \(assignment.courseName)")
+        print("   截止: \(assignment.deadline.map { displayDate($0) } ?? "（无截止时间）")")
+        print("   图标: \(assignment.iconURL)")
+        print("   详情: \(assignment.detailURL)")
+    }
+}
+
 func printEducationExams(_ exams: [EduHelper.Exam]) {
     guard !exams.isEmpty else {
         print("暂无考试安排。")
