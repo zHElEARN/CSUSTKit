@@ -100,6 +100,7 @@ private func runMainMenu(using ssoHelper: SSOHelper, connectionMode: ConnectionM
     let moocHelper = MoocHelper(mode: connectionMode, session: session)
     let eduHelper = EduHelper(mode: connectionMode, session: session)
     let campusCardHelper = CampusCardHelper(mode: connectionMode, session: session)
+    let chaoxingHelper = ChaoxingHelper(mode: connectionMode, session: session)
 
     while true {
         print("")
@@ -107,6 +108,7 @@ private func runMainMenu(using ssoHelper: SSOHelper, connectionMode: ConnectionM
         print("1. 网络课程中心")
         print("2. 教务系统")
         print("3. 校园卡系统")
+        print("4. 学习通")
         print("0. 返回入口菜单")
 
         switch prompt("请选择操作") {
@@ -130,6 +132,13 @@ private func runMainMenu(using ssoHelper: SSOHelper, connectionMode: ConnectionM
                 await runCampusCardMenu(using: campusCardHelper, ticket: ticket)
             } catch {
                 print("进入校园卡系统失败: \(error)")
+            }
+        case "4":
+            do {
+                try await ssoHelper.loginToChaoxing()
+                await runChaoxingMenu(using: chaoxingHelper)
+            } catch {
+                print("进入学习通失败: \(error)")
             }
         case "0":
             return
