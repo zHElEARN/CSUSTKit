@@ -41,7 +41,7 @@ public class SSOHelper: BaseHelper {
         guard let pwdEncryptSaltInput = try document.select("input#pwdEncryptSalt").first() else {
             throw SSOHelperError.getLoginFormFailed("未找到pwdEncryptSalt输入框")
         }
-        guard let executionInput = try document.select("input#execution").first() else {
+        guard let executionInput = try document.select("input#execution, input[name=execution]").first() else {
             throw SSOHelperError.getLoginFormFailed("未找到execution输入框")
         }
         return LoginForm(pwdEncryptSalt: try pwdEncryptSaltInput.attr("value"), execution: try executionInput.attr("value"))
