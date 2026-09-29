@@ -30,6 +30,7 @@ public class ChaoxingHelper: BaseHelper {
     /// - Returns: 作业列表
     public func getAssignments() async throws -> [Assignment] {
         let response = try await performRequest(factory.make(.chaoxingAPI, "/mooc-ans/work/stu-work"))
+        try Self.validatePageCompleteness(response)
         let document = try SwiftSoup.parse(response)
         let now = Date()
         guard let listElement = try document.select("#content ul.nav").first() else {
@@ -48,21 +49,11 @@ public class ChaoxingHelper: BaseHelper {
             guard detailSpans.count >= 2 else {
                 throw ChaoxingHelperError.assignmentsRetrievalFailed("作业条目结构异常")
             }
-            let statusText = try detailSpans[0].text().trim()
-            let isCompleted: Bool =
-                switch statusText {
-                case "未提交":
-                    false
-                case "已完成":
-                    true
-                default:
-                    throw ChaoxingHelperError.assignmentsRetrievalFailed("未知的作业状态: \(statusText)")
-                }
             let remainingText = try itemElement.select("span.fr").first()?.text().trim()
             assignments.append(
                 Assignment(
                     title: try titleElement.text().trim(),
-                    isCompleted: isCompleted,
+                    status: try detailSpans[0].text().trim(),
                     courseName: try detailSpans[1].text().trim(),
                     deadline: try remainingText.map { try Self.parseDeadline($0, now: now) },
                     iconURL: "https:" + (try iconElement.attr("src")),
@@ -74,6 +65,18 @@ public class ChaoxingHelper: BaseHelper {
     }
 
     // MARK: - Utils
+
+    /// 校验作业列表页是否已完整返回
+    ///
+    /// 列表页用 `var haveMore = "0";` 标记「没有更多数据」，拿不到这个标记就说明本次
+    /// 只返回了部分列表，此时必须直接报错，不能返回不完整的作业列表。
+    /// - Parameter html: 作业列表页 HTML
+    /// - Throws: `ChaoxingHelperError`
+    internal static func validatePageCompleteness(_ html: String) throws {
+        guard html.contains("var haveMore = \"0\";") else {
+            throw ChaoxingHelperError.assignmentsRetrievalFailed("作业列表未完整返回")
+        }
+    }
 
     /// 把「剩余{小时}小时{分钟}分钟」换算成截止时间，分钟部分可省略（如「剩余2小时」）
     private static func parseDeadline(_ remainingText: String, now: Date) throws -> Date {
