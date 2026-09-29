@@ -75,17 +75,43 @@ public class ChaoxingHelper: BaseHelper {
 
     // MARK: - Utils
 
-    /// 把「剩余{小时}小时{分钟}分钟」换算成截止时间
+    /// 把「剩余{小时}小时{分钟}分钟」换算成截止时间，分钟部分可省略（如「剩余2小时」）
     private static func parseDeadline(_ remainingText: String, now: Date) throws -> Date {
-        guard remainingText.hasPrefix("剩余"), remainingText.hasSuffix("分钟") else {
+        guard remainingText.hasPrefix("剩余") else {
             throw ChaoxingHelperError.assignmentsRetrievalFailed("剩余时间格式异常: \(remainingText)")
         }
-        let body = String(remainingText.dropFirst("剩余".count).dropLast("分钟".count))
-        let components = body.components(separatedBy: "小时")
-        guard components.count == 2, let hours = Int(components[0]), let minutes = Int(components[1]) else {
-            throw ChaoxingHelperError.assignmentsRetrievalFailed("剩余时间格式异常: \(remainingText)")
+        var remainder = Substring(remainingText).dropFirst("剩余".count)
+        var hours = 0
+        var minutes = 0
+        var hasHours = false
+        if let hoursRange = remainder.range(of: "小时") {
+            guard let parsedHours = Self.parseNonNegativeInt(remainder[remainder.startIndex..<hoursRange.lowerBound]) else {
+                throw ChaoxingHelperError.assignmentsRetrievalFailed("剩余时间格式异常: \(remainingText)")
+            }
+            hours = parsedHours
+            hasHours = true
+            remainder = remainder[hoursRange.upperBound...]
+        }
+        if remainder.hasSuffix("分钟") {
+            guard let parsedMinutes = Self.parseNonNegativeInt(remainder.dropLast("分钟".count)) else {
+                throw ChaoxingHelperError.assignmentsRetrievalFailed("剩余时间格式异常: \(remainingText)")
+            }
+            minutes = parsedMinutes
+        } else {
+            // 分钟部分缺失时，必须已经解析出小时且无剩余字符
+            guard hasHours, remainder.isEmpty else {
+                throw ChaoxingHelperError.assignmentsRetrievalFailed("剩余时间格式异常: \(remainingText)")
+            }
         }
         return now.addingTimeInterval(TimeInterval(hours * 3600 + minutes * 60))
+    }
+
+    /// 严格解析非负整数，仅接受纯 ASCII 数字
+    private static func parseNonNegativeInt(_ text: Substring) -> Int? {
+        guard !text.isEmpty, text.allSatisfy({ $0.isASCII && $0.isNumber }) else {
+            return nil
+        }
+        return Int(text)
     }
 
     // MARK: - Request
