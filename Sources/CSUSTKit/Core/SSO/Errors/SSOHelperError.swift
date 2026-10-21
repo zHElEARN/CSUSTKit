@@ -7,6 +7,8 @@ extension SSOHelper {
         case getLoginFormFailed(String)
         /// 登录失败
         case loginFailed(String)
+        /// 账号资料待完善
+        case needImproveUserInfo
         /// 验证码获取失败
         case captchaRetrievalFailed
         /// 动态码获取失败
@@ -27,6 +29,8 @@ extension SSOHelper {
                 return "获取登录表单失败: \(message)"
             case .loginFailed(let message):
                 return "登录失败: \(message)"
+            case .needImproveUserInfo:
+                return "账号信息待完善，请前往网页端完善信息"
             case .captchaRetrievalFailed:
                 return "验证码获取失败"
             case .dynamicCodeRetrievalFailed(let message):

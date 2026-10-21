@@ -38,6 +38,9 @@ public class SSOHelper: BaseHelper {
             throw SSOHelperError.getLoginFormFailed("无响应数据")
         }
         let document = try SwiftSoup.parse(value)
+
+        try checkNeedImproveUserInfo(response)
+
         guard let pwdEncryptSaltInput = try document.select("input#pwdEncryptSalt").first() else {
             throw SSOHelperError.getLoginFormFailed("未找到pwdEncryptSalt输入框")
         }
@@ -45,6 +48,16 @@ public class SSOHelper: BaseHelper {
             throw SSOHelperError.getLoginFormFailed("未找到execution输入框")
         }
         return LoginForm(pwdEncryptSalt: try pwdEncryptSaltInput.attr("value"), execution: try executionInput.attr("value"))
+    }
+
+    private func checkNeedImproveUserInfo(_ response: DataResponse<String, AFError>) throws {
+        guard let html = response.value else { return }
+
+        let currentURL = response.response?.url?.absoluteString ?? ""
+
+        if html.contains("<title>完善资料</title>") || currentURL.contains("improveUserInfo") {
+            throw SSOHelperError.needImproveUserInfo
+        }
     }
 
     /// 检查是否需要验证码
@@ -90,6 +103,8 @@ public class SSOHelper: BaseHelper {
         guard let finalURL = response.response?.url else {
             throw SSOHelperError.loginFailed("未找到重定向链接")
         }
+
+        try checkNeedImproveUserInfo(response)
 
         var checkURL: URL = finalURL
 
