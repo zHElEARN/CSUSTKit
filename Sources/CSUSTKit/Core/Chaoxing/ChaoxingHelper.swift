@@ -53,14 +53,37 @@ public class ChaoxingHelper: BaseHelper {
                 throw ChaoxingHelperError.assignmentsRetrievalFailed("作业条目结构异常")
             }
             let remainingText = try itemElement.select("span.fr").first()?.text().trim()
+
+            let rawIconURL = try iconElement.attr("src")
+            let iconURL: String
+            if mode == .webVpn {
+                guard let vpnURL = URL(string: "https:" + rawIconURL) else {
+                    throw ChaoxingHelperError.assignmentsRetrievalFailed("作业图标链接格式异常: \(rawIconURL)")
+                }
+                iconURL = try WebVPNHelper.decryptURL(vpnURL).absoluteString
+            } else {
+                iconURL = "https:" + rawIconURL
+            }
+
+            let rawDetailURL = try itemElement.attr("data")
+            let detailURL: String
+            if mode == .webVpn {
+                guard let vpnURL = URL(string: "https:" + rawDetailURL) else {
+                    throw ChaoxingHelperError.assignmentsRetrievalFailed("作业详情链接格式异常: \(rawDetailURL)")
+                }
+                detailURL = try WebVPNHelper.encryptURL(vpnURL).absoluteString
+            } else {
+                detailURL = rawDetailURL
+            }
+
             assignments.append(
                 Assignment(
                     title: try titleElement.text().trim(),
                     status: try detailSpans[0].text().trim(),
                     courseName: try detailSpans[1].text().trim(),
                     deadline: try remainingText.map { try Self.parseDeadline($0, now: now) },
-                    iconURL: "https:" + (try iconElement.attr("src")),
-                    detailURL: try itemElement.attr("data")
+                    iconURL: iconURL,
+                    detailURL: detailURL
                 )
             )
         }
