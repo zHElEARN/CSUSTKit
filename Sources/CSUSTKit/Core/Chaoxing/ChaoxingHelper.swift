@@ -57,10 +57,12 @@ public class ChaoxingHelper: BaseHelper {
             let rawIconURL = try iconElement.attr("src")
             let iconURL: String
             if mode == .webVpn {
-                guard let vpnURL = URL(string: "https:" + rawIconURL) else {
+                guard let url = URL(string: "https:" + rawIconURL) else {
                     throw ChaoxingHelperError.assignmentsRetrievalFailed("作业图标链接格式异常: \(rawIconURL)")
                 }
-                iconURL = try WebVPNHelper.decryptURL(vpnURL).absoluteString
+                // 此处图标URL因为被WebVPN网关加密过了，而图片静态资源若透过WebVPN获取则会需要WebVPN的凭据
+                // 这里解密还原原始URL，还原后无需WebVPN凭据即可获取图片
+                iconURL = try WebVPNHelper.decryptURL(url).absoluteString
             } else {
                 iconURL = "https:" + rawIconURL
             }
@@ -68,10 +70,12 @@ public class ChaoxingHelper: BaseHelper {
             let rawDetailURL = try itemElement.attr("data")
             let detailURL: String
             if mode == .webVpn {
-                guard let vpnURL = URL(string: "https:" + rawDetailURL) else {
+                guard let url = URL(string: rawDetailURL) else {
                     throw ChaoxingHelperError.assignmentsRetrievalFailed("作业详情链接格式异常: \(rawDetailURL)")
                 }
-                detailURL = try WebVPNHelper.encryptURL(vpnURL).absoluteString
+                // 这里作业详细URL未被WebVPN网关加密，所以这里需要进行加密
+                // 作业帮相关凭据位于WebVPN网关侧，若直连则作业帮会缺失凭据，进入登录页面
+                detailURL = try WebVPNHelper.encryptURL(url).absoluteString
             } else {
                 detailURL = rawDetailURL
             }
