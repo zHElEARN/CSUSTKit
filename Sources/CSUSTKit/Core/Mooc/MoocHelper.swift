@@ -32,7 +32,7 @@ public class MoocHelper: BaseHelper {
 
     internal override func validateLoginResponse<T>(_ response: T) throws {
         guard let html = response as? String else { return }
-        if html.contains("<TITLE>错误！</TITLE>") || html.contains("请登录！") {
+        if html.contains("<TITLE>错误！</TITLE>") || html.contains("请登录！") || isWebVpnLoginPage(html) {
             throw MoocHelperError.notLoggedIn
         }
     }

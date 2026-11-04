@@ -4,7 +4,7 @@ import Alamofire
 public class EduHelper: BaseHelper {
     internal override func validateLoginResponse<T>(_ response: T) throws {
         guard let html = response as? String else { return }
-        if html.contains("请输入账号") {
+        if html.contains("请输入账号") || isWebVpnLoginPage(html) {
             throw EduHelperError.notLoggedIn
         }
     }

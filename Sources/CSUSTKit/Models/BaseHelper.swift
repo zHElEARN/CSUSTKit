@@ -14,6 +14,10 @@ public class BaseHelper {
     /// 判断响应是否表示已被登出，由各子系统覆写
     internal func validateLoginResponse<T>(_ response: T) throws {}
 
+    internal func isWebVpnLoginPage(_ html: String) -> Bool {
+        return html.contains("window.location.href = './start.html")
+    }
+
     /// 该子系统所有请求默认携带的拦截器
     internal var requestInterceptor: (any RequestInterceptor)? { return nil }
 

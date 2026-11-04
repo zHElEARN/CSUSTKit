@@ -12,7 +12,7 @@ public class ChaoxingHelper: BaseHelper {
 
     internal override func validateLoginResponse<T>(_ response: T) throws {
         guard let html = response as? String else { return }
-        if html.contains("<title>用户登录</title>") || html.contains("请输入账号") {
+        if html.contains("<title>用户登录</title>") || html.contains("请输入账号") || isWebVpnLoginPage(html) {
             throw ChaoxingHelperError.notLoggedIn
         }
     }

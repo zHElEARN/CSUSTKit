@@ -9,7 +9,7 @@ public class PhysicsExperimentHelper: BaseHelper {
 
     internal override func validateLoginResponse<T>(_ response: T) throws {
         guard let html = response as? String else { return }
-        if html.contains("name=\"txtUserName\"") {
+        if html.contains("name=\"txtUserName\"") || isWebVpnLoginPage(html) {
             throw PhysicsExperimentHelperError.notLoggedIn
         }
     }

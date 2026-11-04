@@ -16,6 +16,9 @@ public class CampusCardHelper: BaseHelper {
     }
 
     internal override func validateLoginResponse<T>(_ response: T) throws {
+        if let html = response as? String, isWebVpnLoginPage(html) {
+            throw CampusCardHelperError.notLoggedIn
+        }
         if let payload = response as? any CodedResponse, payload.code == 401 {
             throw CampusCardHelperError.notLoggedIn
         }
