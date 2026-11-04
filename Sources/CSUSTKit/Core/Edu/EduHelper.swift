@@ -13,7 +13,13 @@ public class EduHelper: BaseHelper {
     }
 
     internal func performRequest(_ url: String, _ method: HTTPMethod = .get, _ parameters: [String: String]? = nil) async throws -> String {
-        let response = try await session.request(url, method: method, parameters: parameters, encoding: URLEncoding.default).string()
+        let response = try await session.request(
+            url,
+            method: method,
+            parameters: parameters,
+            encoding: URLEncoding.default,
+            interceptor: EmptyBodyRetryInterceptor()
+        ).string()
         if isLoginRequired(response: response) {
             throw EduHelperError.notLoggedIn
         }
