@@ -15,14 +15,6 @@ public class SSOHelper: BaseHelper {
         let isNeed: Bool
     }
 
-    private struct GetDynamicCodeResponse: Decodable {
-        let code: String
-        let message: String
-        let mobile: String?
-        let intervalTime: Int?
-        let time: Int?
-    }
-
     // MARK: - Methods
 
     /// 获取登录表单
