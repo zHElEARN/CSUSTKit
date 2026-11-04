@@ -14,7 +14,7 @@ func runEducationMenu(using eduHelper: EduHelper) async {
         switch prompt("请选择操作") {
         case "1":
             await handleAsyncOperation {
-                let profile = try await eduHelper.profileService.getProfile()
+                let profile = try await eduHelper.getProfile()
                 print("")
                 print("姓名: \(profile.name)")
                 print("学号: \(profile.studentID)")
@@ -25,17 +25,17 @@ func runEducationMenu(using eduHelper: EduHelper) async {
             }
         case "2":
             await handleAsyncOperation {
-                let exams = try await eduHelper.examService.getExamSchedule()
+                let exams = try await eduHelper.getExamSchedule()
                 printEducationExams(exams)
             }
         case "3":
             await handleAsyncOperation {
-                let grades = try await eduHelper.courseService.getCourseGrades()
+                let grades = try await eduHelper.getCourseGrades()
                 printCourseGrades(grades)
             }
         case "4":
             await handleAsyncOperation {
-                let (courses, remarks) = try await eduHelper.courseService.getCourseSchedule()
+                let (courses, remarks) = try await eduHelper.getCourseSchedule()
                 printEducationCourses(courses)
                 print("备注:")
                 print(remarks)
@@ -43,7 +43,7 @@ func runEducationMenu(using eduHelper: EduHelper) async {
         case "5":
             await handleAsyncOperation {
                 let classroomQuery = promptClassroomQuery()
-                let classrooms = try await eduHelper.courseService.getAvailableClassrooms(
+                let classrooms = try await eduHelper.getAvailableClassrooms(
                     campus: classroomQuery.campus,
                     week: classroomQuery.week,
                     dayOfWeek: classroomQuery.dayOfWeek,
