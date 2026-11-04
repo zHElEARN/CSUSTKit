@@ -1,6 +1,11 @@
 import Alamofire
 import Foundation
 
+/// 带业务状态码的响应
+private protocol CodedResponse {
+    var code: Int { get }
+}
+
 /// 校园卡助手
 public class CampusCardHelper: BaseHelper {
     // 身份令牌
@@ -10,7 +15,13 @@ public class CampusCardHelper: BaseHelper {
         return (try? await getProfile()) != nil
     }
 
-    private struct BaseResponse<T: Codable & Sendable>: Codable, Sendable {
+    internal override func validateLoginResponse<T>(_ response: T) throws {
+        if let payload = response as? any CodedResponse, payload.code == 401 {
+            throw CampusCardHelperError.notLoggedIn
+        }
+    }
+
+    private struct BaseResponse<T: Codable & Sendable>: Codable, Sendable, CodedResponse {
         let code: Int
         let success: Bool?
         let data: T?
@@ -76,13 +87,12 @@ public class CampusCardHelper: BaseHelper {
             "device_token": "h5",
             "synAccessSource": "h5",
         ]
-        let response = try await session.request(
+        let response: TokenResponse = try await performDecodableRequest(
             factory.make(.campusCard, "/berserker-auth/oauth/token"),
-            method: .post,
-            parameters: parameters,
-            encoding: URLEncoding.default,
+            .post,
+            parameters,
             headers: .init(header)
-        ).decodable(TokenResponse.self)
+        )
 
         self.token = response.accessToken
     }
@@ -97,18 +107,18 @@ public class CampusCardHelper: BaseHelper {
         let headers = [
             "synjones-auth": "bearer \(token)"
         ]
-        let response = try await session.request(factory.make(.campusCard, "/berserker-base/user?synAccessSource=h5"), headers: .init(headers)).decodable(BaseResponse<Profile>.self)
+        let response: BaseResponse<Profile> = try await performDecodableRequest(
+            factory.make(.campusCard, "/berserker-base/user?synAccessSource=h5"),
+            headers: .init(headers)
+        )
 
-        guard response.code != 401 else {
-            throw CampusCardHelperError.notLoggedIn
-        }
         guard let data = response.data else {
             throw CampusCardHelperError.profileRetrievalFailed("获取个人信息失败: \(response.message ?? "nil")")
         }
         return data
     }
 
-    private struct BaseQueryResponse<T: Codable & Sendable>: Codable, Sendable {
+    private struct BaseQueryResponse<T: Codable & Sendable>: Codable, Sendable, CodedResponse {
         struct MapContainer<U: Codable & Sendable>: Codable {
             let data: U
         }
@@ -161,17 +171,13 @@ public class CampusCardHelper: BaseHelper {
             "level": "1",
             "xiaoqu_id": campus.campusID,
         ]
-        let response = try await session.request(
+        let response: BaseQueryResponse<[BuildingItem]> = try await performDecodableRequest(
             factory.make(.campusCard, "/charge/feeitem/getThirdData"),
-            method: .post,
-            parameters: parameters,
+            .post,
+            parameters,
             headers: .init(headers)
         )
-        .decodable(BaseQueryResponse<[BuildingItem]>.self)
 
-        guard response.code != 401 else {
-            throw CampusCardHelperError.notLoggedIn
-        }
         guard let map = response.map else {
             throw CampusCardHelperError.buildingsRetrievalFailed("获取楼栋列表失败: \(response.message ?? "nil")")
         }
@@ -200,17 +206,13 @@ public class CampusCardHelper: BaseHelper {
             "xiaoqu_id": building.campus.campusID,
             "loudong_id": building.id,
         ]
-        let response = try await session.request(
+        let response: BaseQueryResponse<[RoomItem]> = try await performDecodableRequest(
             factory.make(.campusCard, "/charge/feeitem/getThirdData"),
-            method: .post,
-            parameters: parameters,
+            .post,
+            parameters,
             headers: .init(headers)
         )
-        .decodable(BaseQueryResponse<[RoomItem]>.self)
 
-        guard response.code != 401 else {
-            throw CampusCardHelperError.notLoggedIn
-        }
         guard let map = response.map else {
             throw CampusCardHelperError.roomsRetrievalFailed("获取宿舍列表失败: \(response.message ?? "nil")")
         }
@@ -240,17 +242,13 @@ public class CampusCardHelper: BaseHelper {
             "loudong_id": room.building.id,
             "room_id": room.id,
         ]
-        let response = try await session.request(
+        let response: BaseQueryResponse<RoomPowerInfo> = try await performDecodableRequest(
             factory.make(.campusCard, "/charge/feeitem/getThirdData"),
-            method: .post,
-            parameters: parameters,
+            .post,
+            parameters,
             headers: .init(headers)
         )
-        .decodable(BaseQueryResponse<RoomPowerInfo>.self)
 
-        guard response.code != 401 else {
-            throw CampusCardHelperError.notLoggedIn
-        }
         guard let map = response.map else {
             throw CampusCardHelperError.electricityRetrievalFailed("获取宿舍电量失败: \(response.message ?? "nil")")
         }
@@ -264,7 +262,7 @@ public class CampusCardHelper: BaseHelper {
 
     /// 登出
     public func logout() async throws {
-        try await session.request(factory.make(.campusCard, "/berserker-base/redirect?type=logout&synjones-auth=\(token ?? "")&loginFrom=h5&synAccessSource=h5")).data()
+        try await performDataRequest(factory.make(.campusCard, "/berserker-base/redirect?type=logout&synjones-auth=\(token ?? "")&loginFrom=h5&synAccessSource=h5"))
         // 以防万一
         token = nil
     }

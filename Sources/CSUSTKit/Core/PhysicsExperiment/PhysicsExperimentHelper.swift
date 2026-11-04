@@ -7,11 +7,10 @@ public class PhysicsExperimentHelper: BaseHelper {
 
     // MARK: - Methods
 
-    internal override var loginValidator: ((String) throws -> Void)? {
-        return { html in
-            if html.contains("name=\"txtUserName\"") {
-                throw PhysicsExperimentError.notLoggedIn
-            }
+    internal override func validateLoginResponse<T>(_ response: T) throws {
+        guard let html = response as? String else { return }
+        if html.contains("name=\"txtUserName\"") {
+            throw PhysicsExperimentError.notLoggedIn
         }
     }
 

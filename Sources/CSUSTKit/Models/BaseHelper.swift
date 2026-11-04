@@ -11,8 +11,8 @@ public class BaseHelper {
         self.factory = .init(mode: mode)
     }
 
-    /// 解析响应前判断是否已被登出
-    internal var loginValidator: ((String) throws -> Void)? { return nil }
+    /// 判断响应是否表示已被登出，由各子系统覆写
+    internal func validateLoginResponse<T>(_ response: T) throws {}
 
     /// 该子系统所有请求默认携带的拦截器
     internal var requestInterceptor: (any RequestInterceptor)? { return nil }

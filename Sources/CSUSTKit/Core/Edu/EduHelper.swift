@@ -2,11 +2,10 @@ import Alamofire
 
 /// 教务助手
 public class EduHelper: BaseHelper {
-    internal override var loginValidator: ((String) throws -> Void)? {
-        return { html in
-            if html.contains("请输入账号") {
-                throw EduHelperError.notLoggedIn
-            }
+    internal override func validateLoginResponse<T>(_ response: T) throws {
+        guard let html = response as? String else { return }
+        if html.contains("请输入账号") {
+            throw EduHelperError.notLoggedIn
         }
     }
 

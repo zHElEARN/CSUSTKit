@@ -30,11 +30,10 @@ public class MoocHelper: BaseHelper {
         return (try? await getProfile()) != nil
     }
 
-    internal override var loginValidator: ((String) throws -> Void)? {
-        return { html in
-            if html.contains("<TITLE>错误！</TITLE>") || html.contains("请登录！") {
-                throw MoocHelperError.notLoggedIn
-            }
+    internal override func validateLoginResponse<T>(_ response: T) throws {
+        guard let html = response as? String else { return }
+        if html.contains("<TITLE>错误！</TITLE>") || html.contains("请登录！") {
+            throw MoocHelperError.notLoggedIn
         }
     }
 

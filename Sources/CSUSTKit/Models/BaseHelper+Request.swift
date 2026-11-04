@@ -19,9 +19,27 @@ extension BaseHelper {
             interceptor: self.requestInterceptor
         ).string(stringEncoding)
         if validateLogin {
-            try loginValidator?(response)
+            try validateLoginResponse(response)
         }
         return response
+    }
+
+    internal func performDecodableRequest<T: Decodable & Sendable>(
+        _ url: String,
+        _ method: HTTPMethod = .get,
+        _ parameters: [String: String]? = nil,
+        headers: HTTPHeaders? = nil
+    ) async throws -> T {
+        let value: T = try await session.request(
+            url,
+            method: method,
+            parameters: parameters,
+            encoding: URLEncoding.default,
+            headers: headers,
+            interceptor: self.requestInterceptor
+        ).decodable(T.self)
+        try validateLoginResponse(value)
+        return value
     }
 
     @discardableResult
