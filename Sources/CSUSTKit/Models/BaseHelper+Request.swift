@@ -42,6 +42,23 @@ extension BaseHelper {
         return value
     }
 
+    internal func performResponseRequest(
+        _ url: String,
+        _ method: HTTPMethod = .get,
+        _ parameters: [String: String]? = nil,
+        headers: HTTPHeaders? = nil,
+        stringEncoding: String.Encoding? = nil
+    ) async -> DataResponse<String, AFError> {
+        await session.request(
+            url,
+            method: method,
+            parameters: parameters,
+            encoding: URLEncoding.default,
+            headers: headers,
+            interceptor: self.requestInterceptor
+        ).serializingString(encoding: stringEncoding).response
+    }
+
     @discardableResult
     internal func performDataRequest(
         _ url: String,

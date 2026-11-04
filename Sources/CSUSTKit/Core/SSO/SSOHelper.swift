@@ -29,7 +29,7 @@ public class SSOHelper: BaseHelper {
     /// - Throws: `SSOHelperError`
     /// - Returns: 登录表单数据
     public func getLoginForm() async throws -> LoginForm {
-        let response = await session.request(factory.make(.authServer, "/authserver/login?service=https%3A%2F%2Fehall.csust.edu.cn%2Flogin")).stringResponse()
+        let response = await performResponseRequest(factory.make(.authServer, "/authserver/login?service=https%3A%2F%2Fehall.csust.edu.cn%2Flogin"))
         // 已经登录
         guard response.response?.url != URL(factory.make(.ehall, "/index.html")) else {
             throw SSOHelperError.getLoginFormFailed("账号已登录")
@@ -66,7 +66,7 @@ public class SSOHelper: BaseHelper {
     /// - Returns: 是否需要验证码
     public func checkNeedCaptcha(username: String) async throws -> Bool {
         let timestamp = Date().millisecondsSince1970
-        let response = try await session.request(factory.make(.authServer, "/authserver/checkNeedCaptcha.htl?username=\(username)&_=\(timestamp)")).decodable(CheckResponse.self)
+        let response: CheckResponse = try await performDecodableRequest(factory.make(.authServer, "/authserver/checkNeedCaptcha.htl?username=\(username)&_=\(timestamp)"))
         return response.isNeed
     }
 
@@ -74,7 +74,7 @@ public class SSOHelper: BaseHelper {
     /// - Throws: `SSOHelperError`
     /// - Returns: 验证码图片数据
     public func getCaptcha() async throws -> Data {
-        let response = try await session.request(factory.make(.authServer, "/authserver/getCaptcha.htl")).data()
+        let response = try await performDataRequest(factory.make(.authServer, "/authserver/getCaptcha.htl"))
         guard !response.isEmpty else {
             throw SSOHelperError.captchaRetrievalFailed
         }
@@ -99,7 +99,7 @@ public class SSOHelper: BaseHelper {
             "lt": "",
             "execution": loginForm.execution,
         ]
-        let response = await session.post(factory.make(.authServer, "/authserver/login?service=https%3A%2F%2Fehall.csust.edu.cn%2Flogin"), parameters).stringResponse()
+        let response = await performResponseRequest(factory.make(.authServer, "/authserver/login?service=https%3A%2F%2Fehall.csust.edu.cn%2Flogin"), .post, parameters)
         guard let finalURL = response.response?.url else {
             throw SSOHelperError.loginFailed("未找到重定向链接")
         }
@@ -118,7 +118,7 @@ public class SSOHelper: BaseHelper {
                 }
                 throw SSOHelperError.loginFailed("登录失败: \(finalURL)")
             }
-            let checkResponse = await session.request("https://vpn.csust.edu.cn/enclient/api/users/admin/custom/page/login/sso/cas").stringResponse()
+            let checkResponse = await performResponseRequest("https://vpn.csust.edu.cn/enclient/api/users/admin/custom/page/login/sso/cas")
             guard let checkFinalURL = checkResponse.response?.url else {
                 throw SSOHelperError.loginFailed("登录失败: \(finalURL)")
             }
@@ -138,15 +138,15 @@ public class SSOHelper: BaseHelper {
 
     /// 登出统一身份认证
     public func logout() async throws {
-        try await session.request(factory.make(.ehall, "/logout")).data()
-        try await session.request(factory.make(.authServer, "/authserver/logout")).data()
+        try await performDataRequest(factory.make(.ehall, "/logout"))
+        try await performDataRequest(factory.make(.authServer, "/authserver/logout"))
     }
 
     /// 获取登录用户信息
     /// - Throws: `SSOHelperError`
     /// - Returns: 用户信息
     public func getLoginUser() async throws -> Profile {
-        let response = try await session.request(factory.make(.ehall, "/getLoginUser")).decodable(LoginUserResponse.self)
+        let response: LoginUserResponse = try await performDecodableRequest(factory.make(.ehall, "/getLoginUser"))
         guard let user = response.data else {
             throw SSOHelperError.notLoggedIn
         }
@@ -158,8 +158,8 @@ public class SSOHelper: BaseHelper {
     /// - Returns: 教务系统的会话信息
     @discardableResult
     public func loginToEducation() async throws -> Session {
-        try await session.request(factory.make(.education, "/sso.jsp")).data()
-        let response = try await session.request(factory.make(.authServer, "/authserver/login?service=http%3A%2F%2Fxk.csust.edu.cn%2Fsso.jsp")).string()
+        try await performDataRequest(factory.make(.education, "/sso.jsp"))
+        let response = try await performRequest(factory.make(.authServer, "/authserver/login?service=http%3A%2F%2Fxk.csust.edu.cn%2Fsso.jsp"))
         guard !response.contains("账号登录") else {
             throw SSOHelperError.notLoggedIn
         }
@@ -171,8 +171,7 @@ public class SSOHelper: BaseHelper {
     /// - Returns: 网络课程中心的会话信息
     @discardableResult
     public func loginToMooc() async throws -> Session {
-        let request = session.request(factory.make(.mooc, "/meol/homepage/common/sso_login.jsp"))
-        let response = await request.stringResponse()
+        let response = await performResponseRequest(factory.make(.mooc, "/meol/homepage/common/sso_login.jsp"))
         guard let finalURL = response.response?.url else {
             throw SSOHelperError.loginToMoocFailed("未找到重定向URL")
         }
@@ -190,8 +189,7 @@ public class SSOHelper: BaseHelper {
     /// - Returns: 学习通的会话信息
     @discardableResult
     public func loginToChaoxing() async throws -> Session {
-        let request = session.request(factory.make(.authServer, "/authserver/login?service=http%3A%2F%2Ffysso.chaoxing.com%2Fsso%2Fcsust"))
-        let response = await request.stringResponse()
+        let response = await performResponseRequest(factory.make(.authServer, "/authserver/login?service=http%3A%2F%2Ffysso.chaoxing.com%2Fsso%2Fcsust"))
         guard let finalURL = response.response?.url else {
             throw SSOHelperError.loginToChaoxingFailed("未找到重定向URL")
         }
@@ -212,8 +210,7 @@ public class SSOHelper: BaseHelper {
     /// - Returns: 校园卡系统的会话信息
     @discardableResult
     public func loginToCampusCard() async throws -> (Session, String) {
-        let request = session.request(factory.make(.campusCard, "/berserker-auth/cas/login/wisedu?targetUrl=https://hxyxh5.csust.edu.cn/plat/?name=loginTransit"))
-        let response = await request.stringResponse()
+        let response = await performResponseRequest(factory.make(.campusCard, "/berserker-auth/cas/login/wisedu?targetUrl=https://hxyxh5.csust.edu.cn/plat/?name=loginTransit"))
         guard let finalURL = response.response?.url else {
             throw SSOHelperError.loginToCampusCardFailed("未找到重定向URL")
         }
