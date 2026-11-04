@@ -21,7 +21,10 @@ public class SSOHelper: BaseHelper {
     /// - Throws: `SSOHelperError`
     /// - Returns: 登录表单数据
     public func getLoginForm() async throws -> LoginForm {
-        let response = await performResponseRequest(factory.make(.authServer, "/authserver/login?service=https%3A%2F%2Fehall.csust.edu.cn%2Flogin"))
+        let response = try await performResponseRequest(
+            factory.make(.authServer, "/authserver/login?service=https%3A%2F%2Fehall.csust.edu.cn%2Flogin"),
+            validateLogin: false
+        )
         // 已经登录
         guard response.response?.url != URL(factory.make(.ehall, "/index.html")) else {
             throw SSOHelperError.getLoginFormFailed("账号已登录")
@@ -91,7 +94,12 @@ public class SSOHelper: BaseHelper {
             "lt": "",
             "execution": loginForm.execution,
         ]
-        let response = await performResponseRequest(factory.make(.authServer, "/authserver/login?service=https%3A%2F%2Fehall.csust.edu.cn%2Flogin"), .post, parameters)
+        let response = try await performResponseRequest(
+            factory.make(.authServer, "/authserver/login?service=https%3A%2F%2Fehall.csust.edu.cn%2Flogin"),
+            .post,
+            parameters,
+            validateLogin: false
+        )
         guard let finalURL = response.response?.url else {
             throw SSOHelperError.loginFailed("未找到重定向链接")
         }
@@ -110,7 +118,10 @@ public class SSOHelper: BaseHelper {
                 }
                 throw SSOHelperError.loginFailed("登录失败: \(finalURL)")
             }
-            let checkResponse = await performResponseRequest("https://vpn.csust.edu.cn/enclient/api/users/admin/custom/page/login/sso/cas")
+            let checkResponse = try await performResponseRequest(
+                "https://vpn.csust.edu.cn/enclient/api/users/admin/custom/page/login/sso/cas",
+                validateLogin: false
+            )
             guard let checkFinalURL = checkResponse.response?.url else {
                 throw SSOHelperError.loginFailed("登录失败: \(finalURL)")
             }
@@ -145,28 +156,33 @@ public class SSOHelper: BaseHelper {
         return user
     }
 
-    /// 从统一身份认证登录教务系统
-    /// - Throws: `SSOHelperError`
-    public func loginToEducation() async throws {
-        try await performDataRequest(factory.make(.education, "/sso.jsp"))
-        let response = await performResponseRequest(factory.make(.authServer, "/authserver/login?service=http%3A%2F%2Fxk.csust.edu.cn%2Fsso.jsp"))
-        guard let finalURL = response.response?.url else {
-            throw SSOHelperError.loginToEducationFailed("未找到重定向URL")
+    internal override func validateLoginResponse<T>(_ response: T) throws {
+        guard let response = response as? DataResponse<String, AFError>,
+            let finalURL = response.response?.url
+        else {
+            return
         }
         guard !finalURL.path.contains("/authserver/login") else {
             throw SSOHelperError.notLoggedIn
         }
     }
 
+    /// 从统一身份认证登录教务系统
+    /// - Throws: `SSOHelperError`
+    public func loginToEducation() async throws {
+        try await performDataRequest(factory.make(.education, "/sso.jsp"))
+        let response = try await performResponseRequest(factory.make(.authServer, "/authserver/login?service=http%3A%2F%2Fxk.csust.edu.cn%2Fsso.jsp"))
+        guard response.response?.url != nil else {
+            throw SSOHelperError.loginToEducationFailed("未找到重定向URL")
+        }
+    }
+
     /// 从统一身份认证登录网络课程中心
     /// - Throws: `SSOHelperError`
     public func loginToMooc() async throws {
-        let response = await performResponseRequest(factory.make(.mooc, "/meol/homepage/common/sso_login.jsp"))
+        let response = try await performResponseRequest(factory.make(.mooc, "/meol/homepage/common/sso_login.jsp"))
         guard let finalURL = response.response?.url else {
             throw SSOHelperError.loginToMoocFailed("未找到重定向URL")
-        }
-        guard !finalURL.path.contains("/authserver/login") else {
-            throw SSOHelperError.notLoggedIn
         }
         guard finalURL == URL(factory.make(.mooc, "/meol/personal.do")) || finalURL == URL(factory.make(.mooc, "/meol/index.do")) else {
             throw SSOHelperError.loginToMoocFailed("重定向URL异常: \(finalURL)")
@@ -176,12 +192,9 @@ public class SSOHelper: BaseHelper {
     /// 从统一身份认证登录学习通
     /// - Throws: `SSOHelperError`
     public func loginToChaoxing() async throws {
-        let response = await performResponseRequest(factory.make(.authServer, "/authserver/login?service=http%3A%2F%2Ffysso.chaoxing.com%2Fsso%2Fcsust"))
+        let response = try await performResponseRequest(factory.make(.authServer, "/authserver/login?service=http%3A%2F%2Ffysso.chaoxing.com%2Fsso%2Fcsust"))
         guard let finalURL = response.response?.url else {
             throw SSOHelperError.loginToChaoxingFailed("未找到重定向URL")
-        }
-        guard !finalURL.path.contains("/authserver/login") else {
-            throw SSOHelperError.notLoggedIn
         }
         // 登录成功后统一落在学校学习通门户的 /portal 上：
         // 直连是 http://mooc.csust.edu.cn/portal，
@@ -195,12 +208,9 @@ public class SSOHelper: BaseHelper {
     /// - Throws: `SSOHelperError`
     /// - Returns: 校园卡登录凭据
     public func loginToCampusCard() async throws -> String {
-        let response = await performResponseRequest(factory.make(.campusCard, "/berserker-auth/cas/login/wisedu?targetUrl=https://hxyxh5.csust.edu.cn/plat/?name=loginTransit"))
+        let response = try await performResponseRequest(factory.make(.campusCard, "/berserker-auth/cas/login/wisedu?targetUrl=https://hxyxh5.csust.edu.cn/plat/?name=loginTransit"))
         guard let finalURL = response.response?.url else {
             throw SSOHelperError.loginToCampusCardFailed("未找到重定向URL")
-        }
-        guard !finalURL.path.contains("/authserver/login") else {
-            throw SSOHelperError.notLoggedIn
         }
         guard finalURL.absoluteString.starts(with: factory.make(.campusCard, "/plat")) else {
             throw SSOHelperError.loginToCampusCardFailed("重定向URL异常: \(finalURL)")

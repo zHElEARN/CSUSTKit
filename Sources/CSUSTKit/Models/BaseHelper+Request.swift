@@ -47,9 +47,10 @@ extension BaseHelper {
         _ method: HTTPMethod = .get,
         _ parameters: [String: String]? = nil,
         headers: HTTPHeaders? = nil,
-        stringEncoding: String.Encoding? = nil
-    ) async -> DataResponse<String, AFError> {
-        await session.request(
+        stringEncoding: String.Encoding? = nil,
+        validateLogin: Bool = true
+    ) async throws -> DataResponse<String, AFError> {
+        let response = await session.request(
             url,
             method: method,
             parameters: parameters,
@@ -57,6 +58,10 @@ extension BaseHelper {
             headers: headers,
             interceptor: self.requestInterceptor
         ).serializingString(encoding: stringEncoding).response
+        if validateLogin {
+            try validateLoginResponse(response)
+        }
+        return response
     }
 
     @discardableResult
