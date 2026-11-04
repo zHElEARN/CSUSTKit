@@ -23,52 +23,16 @@ public class CampusCardHelper: BaseHelper {
 
     private struct BaseResponse<T: Codable & Sendable>: Codable, Sendable, CodedResponse {
         let code: Int
-        let success: Bool?
         let data: T?
-        let msg: String?
         // 错误时字段为message
         let message: String?
     }
 
     private struct TokenResponse: Codable {
         let accessToken: String
-        let tokenType: String
-        let refreshToken: String
-        let expiresIn: Int
-        let scope: String
-        let tenantId: String
-        let isFirstLogin: Bool
-        let flag: String
-        let sno: String
-        let logintype: String
-        let name: String
-        let mobile: String
-        let id: Int
-        let loginFrom: String
-        let uuid: String
-        let clientId: String
-        let isPasswordExpired: Bool
-        let jti: String
 
         enum CodingKeys: String, CodingKey {
             case accessToken = "access_token"
-            case tokenType = "token_type"
-            case refreshToken = "refresh_token"
-            case expiresIn = "expires_in"
-            case scope
-            case tenantId = "tenant_id"
-            case isFirstLogin = "is_first_login"
-            case flag
-            case sno
-            case logintype
-            case name
-            case mobile
-            case id
-            case loginFrom
-            case uuid
-            case clientId = "client_id"
-            case isPasswordExpired = "is_password_expired"
-            case jti
         }
     }
 
@@ -122,7 +86,6 @@ public class CampusCardHelper: BaseHelper {
         struct MapContainer<U: Codable & Sendable>: Codable {
             let data: U
         }
-        let msg: String?
         // 错误时字段为message
         let message: String?
         let code: Int
@@ -137,19 +100,8 @@ public class CampusCardHelper: BaseHelper {
     private typealias RoomItem = BuildingItem
 
     struct RoomPowerInfo: Codable, Sendable {
-        let roomId: String
         let allAmp: String
-        let xiaoquId: String
         let usedAmp: String
-        let loudongId: String
-
-        enum CodingKeys: String, CodingKey {
-            case roomId = "room_id"
-            case allAmp
-            case xiaoquId = "xiaoqu_id"
-            case usedAmp
-            case loudongId = "loudong_id"
-        }
     }
 
     /// 获取楼栋列表
