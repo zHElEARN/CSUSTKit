@@ -48,14 +48,12 @@ extension BaseHelper {
             try validateLoginResponse(text)
         }
 
-        let value = try DecodableResponseSerializer<T>().serialize(
+        return try DecodableResponseSerializer<T>().serialize(
             request: response.request,
             response: response.response,
             data: response.data,
             error: response.error
         )
-        try validateLoginResponse(value)
-        return value
     }
 
     internal func performResponseRequest(

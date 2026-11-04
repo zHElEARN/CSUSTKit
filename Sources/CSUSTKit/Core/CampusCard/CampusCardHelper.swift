@@ -1,11 +1,6 @@
 import Alamofire
 import Foundation
 
-/// 带业务状态码的响应
-private protocol CodedResponse {
-    var code: Int { get }
-}
-
 /// 校园卡助手
 public class CampusCardHelper: BaseHelper {
     // 身份令牌
@@ -16,15 +11,13 @@ public class CampusCardHelper: BaseHelper {
     }
 
     internal override func validateLoginResponse<T>(_ response: T) throws {
-        if let html = response as? String, isWebVpnLoginPage(html) {
-            throw CampusCardHelperError.notLoggedIn
-        }
-        if let payload = response as? any CodedResponse, payload.code == 401 {
+        guard let html = response as? String else { return }
+        if html.contains("\"code\":401") || html.contains("\"code\":400") || isWebVpnLoginPage(html) {
             throw CampusCardHelperError.notLoggedIn
         }
     }
 
-    private struct BaseResponse<T: Codable & Sendable>: Codable, Sendable, CodedResponse {
+    private struct BaseResponse<T: Codable & Sendable>: Codable, Sendable {
         let code: Int
         let data: T?
         // 错误时字段为message
@@ -85,7 +78,7 @@ public class CampusCardHelper: BaseHelper {
         return data
     }
 
-    private struct BaseQueryResponse<T: Codable & Sendable>: Codable, Sendable, CodedResponse {
+    private struct BaseQueryResponse<T: Codable & Sendable>: Codable, Sendable {
         struct MapContainer<U: Codable & Sendable>: Codable {
             let data: U
         }
