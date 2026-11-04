@@ -87,10 +87,15 @@ public class ChaoxingHelper: BaseHelper {
                 detailURL = rawDetailURL
             }
 
+            let statusText = try detailSpans[0].text().trim()
+            guard let status = AssignmentStatus(rawValue: statusText) else {
+                throw ChaoxingHelperError.assignmentsRetrievalFailed("未知的作业状态: \(statusText)")
+            }
+
             assignments.append(
                 Assignment(
                     title: try titleElement.text().trim(),
-                    status: try detailSpans[0].text().trim(),
+                    status: status,
                     courseName: try detailSpans[1].text().trim(),
                     deadline: try remainingText.map { try Self.parseDeadline($0, now: now) },
                     iconURL: iconURL,

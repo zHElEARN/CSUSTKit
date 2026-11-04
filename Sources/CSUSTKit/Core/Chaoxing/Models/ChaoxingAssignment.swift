@@ -5,8 +5,8 @@ extension ChaoxingHelper {
     public struct Assignment: BaseModel {
         /// 作业名称
         public let title: String
-        /// 作业状态，原样保留学习通返回的文本
-        public let status: String
+        /// 作业状态
+        public let status: AssignmentStatus
         /// 所属课程
         public let courseName: String
         /// 截止时间，学习通未给出剩余时间时为 nil
@@ -17,11 +17,11 @@ extension ChaoxingHelper {
         public let detailURL: String
 
         /// 是否已完成
-        public var isCompleted: Bool { status == "已完成" }
+        public var isCompleted: Bool { status == .completed }
 
         public init(
             title: String,
-            status: String,
+            status: AssignmentStatus,
             courseName: String,
             deadline: Date?,
             iconURL: String,

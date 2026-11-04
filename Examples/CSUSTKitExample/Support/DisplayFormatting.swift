@@ -73,7 +73,7 @@ func printChaoxingAssignments(_ assignments: [ChaoxingHelper.Assignment]) {
     for (index, assignment) in assignments.enumerated() {
         print("")
         print("\(index + 1). \(assignment.title)")
-        print("   状态: \(assignment.status)")
+        print("   状态: \(assignment.status.rawValue)")
         print("   课程: \(assignment.courseName)")
         print("   截止: \(assignment.deadline.map { displayDate($0) } ?? "（无截止时间）")")
         print("   图标: \(assignment.iconURL)")
