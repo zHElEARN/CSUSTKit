@@ -1,7 +1,7 @@
 import Foundation
 
 extension PhysicsExperimentHelper {
-    public enum PhysicsExperimentError: Error, LocalizedError {
+    public enum PhysicsExperimentHelperError: Error, LocalizedError {
         /// 登录失败
         case loginFailed(String)
         /// 获取课程表失败
