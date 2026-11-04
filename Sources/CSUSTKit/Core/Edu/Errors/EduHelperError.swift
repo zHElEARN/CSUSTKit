@@ -3,8 +3,6 @@ import Foundation
 extension EduHelper {
     /// 教务助手相关错误
     public enum EduHelperError: Error, LocalizedError {
-        /// 登录失败
-        case loginFailed(String)
         /// 个人信息获取失败
         case profileRetrievalFailed(String)
         /// 未登录
@@ -35,8 +33,6 @@ extension EduHelper {
         /// 错误描述
         public var errorDescription: String? {
             switch self {
-            case .loginFailed(let message):
-                return "登录失败: \(message)"
             case .profileRetrievalFailed(let message):
                 return "个人信息获取失败: \(message)"
             case .notLoggedIn:
