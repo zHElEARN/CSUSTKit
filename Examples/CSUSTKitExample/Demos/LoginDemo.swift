@@ -128,7 +128,7 @@ private func runMainMenu(using ssoHelper: SSOHelper, connectionMode: ConnectionM
             }
         case "3":
             do {
-                let (_, ticket) = try await ssoHelper.loginToCampusCard()
+                let ticket = try await ssoHelper.loginToCampusCard()
                 await runCampusCardMenu(using: campusCardHelper, ticket: ticket)
             } catch {
                 print("进入校园卡系统失败: \(error)")

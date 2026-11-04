@@ -1,7 +1,7 @@
 import Alamofire
 
 public class BaseHelper {
-    public let session: Session
+    internal let session: Session
     internal let mode: ConnectionMode
     internal let factory: URLFactory
 

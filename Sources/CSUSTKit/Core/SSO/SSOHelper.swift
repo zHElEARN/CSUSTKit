@@ -155,22 +155,17 @@ public class SSOHelper: BaseHelper {
 
     /// 从统一身份认证登录教务系统
     /// - Throws: `SSOHelperError`
-    /// - Returns: 教务系统的会话信息
-    @discardableResult
-    public func loginToEducation() async throws -> Session {
+    public func loginToEducation() async throws {
         try await performDataRequest(factory.make(.education, "/sso.jsp"))
         let response = try await performRequest(factory.make(.authServer, "/authserver/login?service=http%3A%2F%2Fxk.csust.edu.cn%2Fsso.jsp"))
         guard !response.contains("账号登录") else {
             throw SSOHelperError.notLoggedIn
         }
-        return session
     }
 
     /// 从统一身份认证登录网络课程中心
     /// - Throws: `SSOHelperError`
-    /// - Returns: 网络课程中心的会话信息
-    @discardableResult
-    public func loginToMooc() async throws -> Session {
+    public func loginToMooc() async throws {
         let response = await performResponseRequest(factory.make(.mooc, "/meol/homepage/common/sso_login.jsp"))
         guard let finalURL = response.response?.url else {
             throw SSOHelperError.loginToMoocFailed("未找到重定向URL")
@@ -181,14 +176,11 @@ public class SSOHelper: BaseHelper {
         guard finalURL == URL(factory.make(.mooc, "/meol/personal.do")) || finalURL == URL(factory.make(.mooc, "/meol/index.do")) else {
             throw SSOHelperError.loginToMoocFailed("重定向URL异常: \(finalURL)")
         }
-        return session
     }
 
     /// 从统一身份认证登录学习通
     /// - Throws: `SSOHelperError`
-    /// - Returns: 学习通的会话信息
-    @discardableResult
-    public func loginToChaoxing() async throws -> Session {
+    public func loginToChaoxing() async throws {
         let response = await performResponseRequest(factory.make(.authServer, "/authserver/login?service=http%3A%2F%2Ffysso.chaoxing.com%2Fsso%2Fcsust"))
         guard let finalURL = response.response?.url else {
             throw SSOHelperError.loginToChaoxingFailed("未找到重定向URL")
@@ -202,14 +194,12 @@ public class SSOHelper: BaseHelper {
         guard finalURL.path.hasSuffix("/portal") else {
             throw SSOHelperError.loginToChaoxingFailed("重定向URL异常: \(finalURL)")
         }
-        return session
     }
 
     /// 从统一身份认证登录校园卡系统
     /// - Throws: `SSOHelperError`
-    /// - Returns: 校园卡系统的会话信息
-    @discardableResult
-    public func loginToCampusCard() async throws -> (Session, String) {
+    /// - Returns: 校园卡登录凭据
+    public func loginToCampusCard() async throws -> String {
         let response = await performResponseRequest(factory.make(.campusCard, "/berserker-auth/cas/login/wisedu?targetUrl=https://hxyxh5.csust.edu.cn/plat/?name=loginTransit"))
         guard let finalURL = response.response?.url else {
             throw SSOHelperError.loginToCampusCardFailed("未找到重定向URL")
@@ -227,7 +217,7 @@ public class SSOHelper: BaseHelper {
             throw SSOHelperError.loginToCampusCardFailed("无法获取登录凭据")
         }
 
-        return (session, ticket)
+        return ticket
     }
 
     public override func isLoggedIn() async -> Bool {
