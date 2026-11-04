@@ -149,8 +149,11 @@ public class SSOHelper: BaseHelper {
     /// - Throws: `SSOHelperError`
     public func loginToEducation() async throws {
         try await performDataRequest(factory.make(.education, "/sso.jsp"))
-        let response = try await performRequest(factory.make(.authServer, "/authserver/login?service=http%3A%2F%2Fxk.csust.edu.cn%2Fsso.jsp"))
-        guard !response.contains("账号登录") else {
+        let response = await performResponseRequest(factory.make(.authServer, "/authserver/login?service=http%3A%2F%2Fxk.csust.edu.cn%2Fsso.jsp"))
+        guard let finalURL = response.response?.url else {
+            throw SSOHelperError.loginToEducationFailed("未找到重定向URL")
+        }
+        guard !finalURL.path.contains("/authserver/login") else {
             throw SSOHelperError.notLoggedIn
         }
     }
@@ -195,6 +198,9 @@ public class SSOHelper: BaseHelper {
         let response = await performResponseRequest(factory.make(.campusCard, "/berserker-auth/cas/login/wisedu?targetUrl=https://hxyxh5.csust.edu.cn/plat/?name=loginTransit"))
         guard let finalURL = response.response?.url else {
             throw SSOHelperError.loginToCampusCardFailed("未找到重定向URL")
+        }
+        guard !finalURL.path.contains("/authserver/login") else {
+            throw SSOHelperError.notLoggedIn
         }
         guard finalURL.absoluteString.starts(with: factory.make(.campusCard, "/plat")) else {
             throw SSOHelperError.loginToCampusCardFailed("重定向URL异常: \(finalURL)")

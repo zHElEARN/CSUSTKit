@@ -13,6 +13,8 @@ extension SSOHelper {
         case captchaRetrievalFailed
         /// 动态码获取失败
         case dynamicCodeRetrievalFailed(String)
+        /// 教务系统登录失败
+        case loginToEducationFailed(String)
         /// 网络课程中心登录失败
         case loginToMoocFailed(String)
         /// 校园卡系统登录失败
@@ -35,6 +37,8 @@ extension SSOHelper {
                 return "验证码获取失败"
             case .dynamicCodeRetrievalFailed(let message):
                 return "动态码获取失败: \(message)"
+            case .loginToEducationFailed(let message):
+                return "教务系统登录失败: \(message)"
             case .loginToMoocFailed(let message):
                 return "网络课程中心登录失败: \(message)"
             case .loginToCampusCardFailed(let message):
