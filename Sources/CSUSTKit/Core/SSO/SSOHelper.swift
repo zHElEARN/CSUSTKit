@@ -157,13 +157,20 @@ public class SSOHelper: BaseHelper {
     }
 
     internal override func validateLoginResponse<T>(_ response: T) throws {
-        guard let response = response as? DataResponse<String, AFError> else {
-            return
+        let html: String?
+        let finalURL: URL?
+        if let response = response as? DataResponse<String, AFError> {
+            html = response.value
+            finalURL = response.response?.url
+        } else {
+            html = response as? String
+            finalURL = nil
         }
-        if let html = response.value, isWebVpnLoginPage(html) {
+
+        if let html, isWebVpnLoginPage(html) {
             throw SSOHelperError.notLoggedIn
         }
-        guard let finalURL = response.response?.url else {
+        guard let finalURL else {
             return
         }
         guard !finalURL.path.contains("/authserver/login") else {

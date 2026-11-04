@@ -28,16 +28,32 @@ extension BaseHelper {
         _ url: String,
         _ method: HTTPMethod = .get,
         _ parameters: [String: String]? = nil,
-        headers: HTTPHeaders? = nil
+        headers: HTTPHeaders? = nil,
+        validateLogin: Bool = true
     ) async throws -> T {
-        let value: T = try await session.request(
+        let response = await session.request(
             url,
             method: method,
             parameters: parameters,
             encoding: URLEncoding.default,
             headers: headers,
             interceptor: self.requestInterceptor
-        ).decodable(T.self)
+        ).serializingData().response
+
+        if validateLogin,
+            let data = response.data,
+            let text = String(data: data, encoding: .utf8),
+            !text.isEmpty
+        {
+            try validateLoginResponse(text)
+        }
+
+        let value = try DecodableResponseSerializer<T>().serialize(
+            request: response.request,
+            response: response.response,
+            data: response.data,
+            error: response.error
+        )
         try validateLoginResponse(value)
         return value
     }
