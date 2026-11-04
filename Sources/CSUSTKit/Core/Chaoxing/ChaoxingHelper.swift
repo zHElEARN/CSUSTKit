@@ -40,12 +40,12 @@ public class ChaoxingHelper: BaseHelper {
     /// - Returns: 作业列表
     public func getAssignments() async throws -> [Assignment] {
         let response = try await performRequest(factory.make(.chaoxingAPI, "/mooc-ans/work/stu-work"), headers: Self.defaultHeaders)
-        try Self.validatePageCompleteness(response)
         let document = try SwiftSoup.parse(response)
         let now = Date()
         guard let listElement = try document.select("#content ul.nav").first() else {
             throw ChaoxingHelperError.assignmentsRetrievalFailed("未找到作业列表")
         }
+        try Self.validatePageCompleteness(response)
 
         var assignments: [Assignment] = []
         for itemElement in try listElement.select("li") {
