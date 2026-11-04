@@ -7,6 +7,14 @@ public class PhysicsExperimentHelper: BaseHelper {
 
     // MARK: - Methods
 
+    internal override var loginValidator: ((String) throws -> Void)? {
+        return { html in
+            if html.contains("name=\"txtUserName\"") {
+                throw PhysicsExperimentError.notLoggedIn
+            }
+        }
+    }
+
     public override func isLoggedIn() async -> Bool {
         return (try? await getCourses()) != nil
     }
@@ -21,7 +29,7 @@ public class PhysicsExperimentHelper: BaseHelper {
         let passwordEncoded = password.base64String
         let urlString = factory.make(.physicsExperiment, "/login.aspx?UserType=0&txtUserName=\(usernameEncoded)&txtPass=\(passwordEncoded)")
 
-        let response = try await session.request(urlString, method: .post).string()
+        let response = try await performRequest(urlString, .post, validateLogin: false)
 
         guard response.contains("true") else {
             throw PhysicsExperimentError.loginFailed(response)
@@ -32,10 +40,7 @@ public class PhysicsExperimentHelper: BaseHelper {
     /// - Throws: `PhysicsExperimentError`
     /// - Returns: 课程列表
     public func getCourses() async throws -> [Course] {
-        let response = try await session.request(factory.make(.physicsExperiment, "/Student/myalltasklist.aspx?generalCourseId=2&generalCourseName=%E5%A4%A7%E5%AD%A6%E7%89%A9%E7%90%86%E5%AE%9E%E9%AA%8C")).string()
-        guard !isLoginRequired(response: response) else {
-            throw PhysicsExperimentError.notLoggedIn
-        }
+        let response = try await performRequest(factory.make(.physicsExperiment, "/Student/myalltasklist.aspx?generalCourseId=2&generalCourseName=%E5%A4%A7%E5%AD%A6%E7%89%A9%E7%90%86%E5%AE%9E%E9%AA%8C"))
 
         let document = try SwiftSoup.parse(response)
         guard let table = try document.getElementsByClass("msgtable").first() else {
@@ -156,10 +161,7 @@ public class PhysicsExperimentHelper: BaseHelper {
     /// - Throws: `PhysicsExperimentError`
     /// - Returns: 课程成绩列表
     public func getCourseGrades() async throws -> [CourseGrade] {
-        let response = try await session.request(factory.make(.physicsExperiment, "/Student/GeneralCourseScore.aspx")).string()
-        guard !isLoginRequired(response: response) else {
-            throw PhysicsExperimentError.notLoggedIn
-        }
+        let response = try await performRequest(factory.make(.physicsExperiment, "/Student/GeneralCourseScore.aspx"))
 
         let document = try SwiftSoup.parse(response)
         guard let table = try document.getElementById("gvList") else {
@@ -205,12 +207,8 @@ public class PhysicsExperimentHelper: BaseHelper {
         return courseGrades
     }
 
-    internal func isLoginRequired(response: String) -> Bool {
-        return response.contains("name=\"txtUserName\"")
-    }
-
     /// 登出当前账号
     public func logout() async throws {
-        try await session.request(factory.make(.physicsExperiment, "/logout.aspx")).data()
+        try await performDataRequest(factory.make(.physicsExperiment, "/logout.aspx"))
     }
 }

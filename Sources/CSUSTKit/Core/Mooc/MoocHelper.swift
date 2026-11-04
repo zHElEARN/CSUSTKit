@@ -30,18 +30,19 @@ public class MoocHelper: BaseHelper {
         return (try? await getProfile()) != nil
     }
 
-    private func isLoginRequired(response: String) -> Bool {
-        return response.contains("<TITLE>错误！</TITLE>") || response.contains("请登录！")
+    internal override var loginValidator: ((String) throws -> Void)? {
+        return { html in
+            if html.contains("<TITLE>错误！</TITLE>") || html.contains("请登录！") {
+                throw MoocHelperError.notLoggedIn
+            }
+        }
     }
 
     /// 获取个人信息
     /// - Throws: `MoocHelperError`
     /// - Returns: 个人信息
     public func getProfile() async throws -> Profile {
-        let response = try await session.request(factory.make(.mooc, "/meol/personal.do")).string(.gbk)
-        if isLoginRequired(response: response) {
-            throw MoocHelperError.notLoggedIn
-        }
+        let response = try await performRequest(factory.make(.mooc, "/meol/personal.do"), stringEncoding: .gbk)
         let document = try SwiftSoup.parse(response)
         let elements = try document.select(".userinfobody > ul > li")
         guard elements.count >= 5 else {
@@ -66,10 +67,7 @@ public class MoocHelper: BaseHelper {
     /// - Throws: `MoocHelperError`
     /// - Returns: 课程列表
     public func getCourses() async throws -> [Course] {
-        let response = try await session.request(factory.make(.mooc, "/meol/lesson/blen.student.lesson.list.jsp")).string(.gbk)
-        if isLoginRequired(response: response) {
-            throw MoocHelperError.notLoggedIn
-        }
+        let response = try await performRequest(factory.make(.mooc, "/meol/lesson/blen.student.lesson.list.jsp"), stringEncoding: .gbk)
         let document = try SwiftSoup.parse(response)
         guard let tableElement = try document.getElementById("table2") else {
             throw MoocHelperError.courseRetrievalFailed("未找到课程表格")
@@ -118,10 +116,7 @@ public class MoocHelper: BaseHelper {
     /// - Throws: `MoocHelperError`
     /// - Returns: 课程作业列表
     public func getCourseAssignments(course: Course) async throws -> [Assignment] {
-        let responseString = try await session.request(factory.make(.mooc, "/meol/hw/stu/hwStuHwtList.do?sortDirection=-1&courseId=\(course.id)&pagingPage=1&pagingNumberPer=1000&sortColumn=deadline")).string()
-        if isLoginRequired(response: responseString) {
-            throw MoocHelperError.notLoggedIn
-        }
+        let responseString = try await performRequest(factory.make(.mooc, "/meol/hw/stu/hwStuHwtList.do?sortDirection=-1&courseId=\(course.id)&pagingPage=1&pagingNumberPer=1000&sortColumn=deadline"))
         guard let responseData = responseString.data(using: .utf8) else {
             throw MoocHelperError.assignmentsRetrievalFailed("作业信息格式无效")
         }
@@ -154,10 +149,7 @@ public class MoocHelper: BaseHelper {
     /// - Throws: `MoocHelperError`
     /// - Returns: 课程测验列表
     public func getCourseExams(course: Course) async throws -> [Exam] {
-        let response = try await session.request(factory.make(.mooc, "/meol/common/question/test/student/list.jsp?sortColumn=createTime&sortDirection=-1&cateId=\(course.id)&pagingPage=1&status=1&pagingNumberPer=1000")).string(.gbk)
-        if isLoginRequired(response: response) {
-            throw MoocHelperError.notLoggedIn
-        }
+        let response = try await performRequest(factory.make(.mooc, "/meol/common/question/test/student/list.jsp?sortColumn=createTime&sortDirection=-1&cateId=\(course.id)&pagingPage=1&status=1&pagingNumberPer=1000"), stringEncoding: .gbk)
         let document = try SwiftSoup.parse(response)
         guard let tableElement = try document.getElementsByClass("valuelist").first() else {
             throw MoocHelperError.testRetrievalFailed("未找到测试表格")
@@ -200,10 +192,7 @@ public class MoocHelper: BaseHelper {
     /// - Throws: `MoocHelperError`
     /// - Returns: 课程列表
     public func getCoursesWithPendingAssignments() async throws -> [Course] {
-        let response = try await session.request(factory.make(.mooc, "/meol/welcomepage/student/interaction_reminder_v8.jsp")).string(.gbk)
-        if isLoginRequired(response: response) {
-            throw MoocHelperError.notLoggedIn
-        }
+        let response = try await performRequest(factory.make(.mooc, "/meol/welcomepage/student/interaction_reminder_v8.jsp"), stringEncoding: .gbk)
         let document = try SwiftSoup.parse(response)
         guard let reminderElement = try document.getElementById("reminder") else {
             throw MoocHelperError.courseNamesWithPendingAssignmentsRetrievalFailed("未找到提醒区域")
@@ -243,6 +232,6 @@ public class MoocHelper: BaseHelper {
 
     /// 登出
     public func logout() async throws {
-        try await session.request(factory.make(.mooc, "/meol/homepage/V8/include/logout.jsp")).data()
+        try await performDataRequest(factory.make(.mooc, "/meol/homepage/V8/include/logout.jsp"))
     }
 }
