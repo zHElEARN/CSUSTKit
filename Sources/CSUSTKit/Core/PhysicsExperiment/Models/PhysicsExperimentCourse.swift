@@ -22,7 +22,7 @@ extension PhysicsExperimentHelper {
         /// 周次
         public let week: Int
         /// 每周日期
-        public let dayOfWeek: EduHelper.DayOfWeek
+        public let dayOfWeek: DayOfWeek
 
         public init(
             id: Int,
@@ -34,7 +34,7 @@ extension PhysicsExperimentHelper {
             endTime: Date,
             classHours: Int,
             week: Int,
-            dayOfWeek: EduHelper.DayOfWeek
+            dayOfWeek: DayOfWeek
         ) {
             self.id = id
             self.name = name

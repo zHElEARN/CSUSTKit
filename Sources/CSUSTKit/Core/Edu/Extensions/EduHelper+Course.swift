@@ -384,7 +384,7 @@ extension EduHelper {
     ///   - section: 节次（大节，范围：1-5）
     /// - Throws: `EduHelperError`
     /// - Returns: 空闲教室列表
-    public func getAvailableClassrooms(campus: CampusCardHelper.Campus, week: Int, dayOfWeek: DayOfWeek, section: Int) async throws -> [String] {
+    public func getAvailableClassrooms(campus: Campus, week: Int, dayOfWeek: DayOfWeek, section: Int) async throws -> [String] {
         let sectionMapper = [1: ("01", "02"), 2: ("03", "04"), 3: ("05", "06"), 4: ("07", "08"), 5: ("09", "10")]
         guard section >= 1 && section <= 5,
             let (startSection, endSection) = sectionMapper[section]

@@ -65,7 +65,7 @@ private func promptClassroomQuery() -> ClassroomQuery {
     let dayNumber = promptInt("请输入星期（1-7）", validRange: 1...7)
     let section = promptInt("请输入大节（1-5）", validRange: 1...5)
 
-    let dayOfWeekMap: [Int: EduHelper.DayOfWeek] = [
+    let dayOfWeekMap: [Int: DayOfWeek] = [
         1: .monday,
         2: .tuesday,
         3: .wednesday,

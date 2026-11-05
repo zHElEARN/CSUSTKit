@@ -51,8 +51,8 @@ func runCampusCardMenu(using campusCardHelper: CampusCardHelper, ticket: String)
     }
 }
 
-func promptCampus() -> CampusCardHelper.Campus {
-    let campus: CampusCardHelper.Campus = promptSelection(
+func promptCampus() -> Campus {
+    let campus: Campus = promptSelection(
         title: "请选择校区",
         options: [("1", "云塘"), ("2", "金盆岭")],
         mapper: { input in

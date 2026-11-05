@@ -2,9 +2,9 @@ import CSUSTKit
 import Foundation
 
 struct ClassroomQuery {
-    let campus: CampusCardHelper.Campus
+    let campus: Campus
     let week: Int
-    let dayOfWeek: EduHelper.DayOfWeek
+    let dayOfWeek: DayOfWeek
     let section: Int
 }
 
@@ -156,7 +156,7 @@ private func compareSessions(_ lhs: EduHelper.ScheduleSession, _ rhs: EduHelper.
     return lhs.endSection < rhs.endSection
 }
 
-private func displayDayOfWeek(_ dayOfWeek: EduHelper.DayOfWeek) -> String {
+private func displayDayOfWeek(_ dayOfWeek: DayOfWeek) -> String {
     switch dayOfWeek {
     case .monday:
         return "星期一"

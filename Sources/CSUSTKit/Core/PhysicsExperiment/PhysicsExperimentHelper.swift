@@ -124,7 +124,7 @@ public class PhysicsExperimentHelper: BaseHelper {
     }
 
     /// 解析周次和星期信息 (例如 "第13周 星期二")
-    private func parseWeekInfo(_ weekInfoString: String) throws -> (week: Int, dayOfWeek: EduHelper.DayOfWeek) {
+    private func parseWeekInfo(_ weekInfoString: String) throws -> (week: Int, dayOfWeek: DayOfWeek) {
         let components = weekInfoString.components(separatedBy: .whitespaces).filter { !$0.isEmpty }
         guard components.count == 2,
             let weekPart = components.first,
@@ -140,7 +140,7 @@ public class PhysicsExperimentHelper: BaseHelper {
         }
 
         // 解析星期
-        let dayOfWeek: EduHelper.DayOfWeek
+        let dayOfWeek: DayOfWeek
         switch dayPart {
         case "星期一": dayOfWeek = .monday
         case "星期二": dayOfWeek = .tuesday
