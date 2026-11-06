@@ -6,30 +6,7 @@ CSUSTKit 是目前特性最全、覆盖面最广的长沙理工大学校园服�
 
 ## 核心功能
 
-CSUSTKit 集成了以下学校业务系统：
-
-- 统一身份认证
-  - 支持统一认证登录
-  - 实现 Session 自动管理
-  - 从统一身份认证登录其他系统
-
-- 教务系统
-  - 获取个人课表、学期安排等
-  - 查询考试安排与考场信息等
-  - 获取课程成绩与学分详情等
-  - ...
-
-- 网络教学平台
-  - 查询课程列表
-  - 获取课程作业、测验及其完成状态
-  - 支持查询未完成的作业
-
-- 大学物理实验平台
-  - 获取物理实验课程安排
-  - 查询实验成绩与报告状态
-
-- 校园卡服务
-  - 实时查询宿舍剩余电量
+CSUSTKit 目前集成了统一身份认证、教务系统、网络教学平台、超星学习通、大学物理实验平台与校园卡六套业务系统，提供统一登录与跨系统免登录、课表 / 成绩 / 考试 / 空闲教室查询、作业与测验进度查询、宿舍电量查询等能力。
 
 > [!TIP]
 > 针对偶发的校园网内网访问限制问题，CSUSTKit 提供了完善的 **WebVPN** 支持：
@@ -60,7 +37,7 @@ dependencies: [
 
 > [!WARNING]
 > 本项目已不再向 CocoaPods 官方源发布新版本，强烈推荐使用 **Swift Package Manager** 进行集成。
-> 
+>
 > 如果您仍需使用 CocoaPods，请通过指定 Git 仓库的方式引入。
 
 将以下行添加到您的 `Podfile` 中：
@@ -71,11 +48,15 @@ pod 'CSUSTKit', :git => 'https://github.com/zHElEARN/CSUSTKit.git'
 
 ## 使用指南
 
-请查看示例代码：
+完整的 API 文档：
 
-**[Examples/CSUSTKitExample/main.swift](Examples/CSUSTKitExample/main.swift)**
+**[CSUSTKit 文档](https://zhelearn.github.io/CSUSTKit/documentation/csustkit/)**
 
-该示例文件包含了从环境配置、SSO 登录、子系统访问到 WebVPN 工具使用的完整流程演示。
+示例代码：
+
+**[Examples/CSUSTKitExample/](Examples/CSUSTKitExample/)**
+
+该示例目录包含了从环境配置、SSO 登录、子系统访问到 WebVPN 工具使用的完整流程演示，程序入口为 `AppMain.swift`，各子系统演示位于 `Demos/`。
 
 ## 许可证
 
