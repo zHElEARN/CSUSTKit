@@ -30,11 +30,10 @@ public class MoocHelper: BaseHelper {
         return (try? await getProfile()) != nil
     }
 
-    internal override func validateLoginResponse<T>(_ response: T) throws {
-        guard let html = response as? String else { return }
-        if html.contains("<TITLE>错误！</TITLE>") || html.contains("请登录！") || isWebVpnLoginPage(html) {
-            throw MoocHelperError.notLoggedIn
-        }
+    internal override var notLoggedInError: (any Error)? { MoocHelperError.notLoggedIn }
+
+    internal override func isSubsystemLoginResponse(_ body: String, finalURL: URL) -> Bool {
+        body.contains("<TITLE>错误！</TITLE>") || body.contains("请登录！")
     }
 
     /// 获取个人信息
@@ -231,6 +230,6 @@ public class MoocHelper: BaseHelper {
 
     /// 登出
     public func logout() async throws {
-        try await performDataRequest(factory.make(.mooc, "/meol/homepage/V8/include/logout.jsp"))
+        try await performDataRequest(factory.make(.mooc, "/meol/homepage/V8/include/logout.jsp"), validateLogin: false)
     }
 }

@@ -61,7 +61,10 @@ public class SSOHelper: BaseHelper {
     /// - Returns: 是否需要验证码
     public func checkNeedCaptcha(username: String) async throws -> Bool {
         let timestamp = Date().millisecondsSince1970
-        let response: CheckResponse = try await performDecodableRequest(factory.make(.authServer, "/authserver/checkNeedCaptcha.htl?username=\(username)&_=\(timestamp)"))
+        let response: CheckResponse = try await performDecodableRequest(
+            factory.make(.authServer, "/authserver/checkNeedCaptcha.htl?username=\(username)&_=\(timestamp)"),
+            validateLogin: false
+        )
         return response.isNeed
     }
 
@@ -69,7 +72,7 @@ public class SSOHelper: BaseHelper {
     /// - Throws: `SSOHelperError`
     /// - Returns: 验证码图片数据
     public func getCaptcha() async throws -> Data {
-        let response = try await performDataRequest(factory.make(.authServer, "/authserver/getCaptcha.htl"))
+        let response = try await performDataRequest(factory.make(.authServer, "/authserver/getCaptcha.htl"), validateLogin: false)
         guard !response.isEmpty else {
             throw SSOHelperError.captchaRetrievalFailed
         }
@@ -141,8 +144,8 @@ public class SSOHelper: BaseHelper {
 
     /// 登出统一身份认证
     public func logout() async throws {
-        try await performDataRequest(factory.make(.ehall, "/logout"))
-        try await performDataRequest(factory.make(.authServer, "/authserver/logout"))
+        try await performDataRequest(factory.make(.ehall, "/logout"), validateLogin: false)
+        try await performDataRequest(factory.make(.authServer, "/authserver/logout"), validateLogin: false)
     }
 
     /// 获取登录用户信息
@@ -156,26 +159,10 @@ public class SSOHelper: BaseHelper {
         return user
     }
 
-    internal override func validateLoginResponse<T>(_ response: T) throws {
-        let html: String?
-        let finalURL: URL?
-        if let response = response as? DataResponse<String, AFError> {
-            html = response.value
-            finalURL = response.response?.url
-        } else {
-            html = response as? String
-            finalURL = nil
-        }
+    internal override var notLoggedInError: (any Error)? { SSOHelperError.notLoggedIn }
 
-        if let html, isWebVpnLoginPage(html) {
-            throw SSOHelperError.notLoggedIn
-        }
-        guard let finalURL else {
-            return
-        }
-        guard !finalURL.path.contains("/authserver/login") else {
-            throw SSOHelperError.notLoggedIn
-        }
+    internal override func isSubsystemLoginResponse(_ body: String, finalURL: URL) -> Bool {
+        finalURL.path.hasSuffix("/authserver/login")
     }
 
     /// 从统一身份认证登录教务系统

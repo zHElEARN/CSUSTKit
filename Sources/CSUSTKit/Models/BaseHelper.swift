@@ -1,4 +1,5 @@
 import Alamofire
+import Foundation
 
 public class BaseHelper {
     internal let session: Session
@@ -11,11 +12,21 @@ public class BaseHelper {
         self.factory = .init(mode: mode)
     }
 
-    /// 判断响应是否表示已被登出，由各子系统覆写
-    internal func validateLoginResponse<T>(_ response: T) throws {}
+    /// 响应明确表示未登录时抛出的子系统错误
+    internal var notLoggedInError: (any Error)? { nil }
 
-    internal func isWebVpnLoginPage(_ html: String) -> Bool {
-        return html.contains("window.location.href = './start.html")
+    /// 各子系统只判断自己的登录标记。正文不可用时传入空字符串。
+    internal func isSubsystemLoginResponse(_ body: String, finalURL: URL) -> Bool { false }
+
+    internal final func validateLoginResponse(_ body: String, finalURL: URL) throws {
+        guard let error = notLoggedInError else { return }
+        if (mode == .webVpn && isWebVpnLoginPage(body)) || isSubsystemLoginResponse(body, finalURL: finalURL) {
+            throw error
+        }
+    }
+
+    private func isWebVpnLoginPage(_ body: String) -> Bool {
+        body.contains("window.location.href = './start.html")
     }
 
     /// 该子系统所有请求默认携带的拦截器

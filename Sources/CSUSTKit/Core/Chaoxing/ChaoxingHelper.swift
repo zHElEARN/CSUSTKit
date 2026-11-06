@@ -10,11 +10,10 @@ public class ChaoxingHelper: BaseHelper {
 
     // MARK: - Methods
 
-    internal override func validateLoginResponse<T>(_ response: T) throws {
-        guard let html = response as? String else { return }
-        if html.contains("<title>用户登录</title>") || html.contains("请输入账号") || isWebVpnLoginPage(html) {
-            throw ChaoxingHelperError.notLoggedIn
-        }
+    internal override var notLoggedInError: (any Error)? { ChaoxingHelperError.notLoggedIn }
+
+    internal override func isSubsystemLoginResponse(_ body: String, finalURL: URL) -> Bool {
+        body.contains("<title>用户登录</title>") || body.contains("请输入账号")
     }
 
     public override func isLoggedIn() async -> Bool {

@@ -10,18 +10,13 @@ extension BaseHelper {
         stringEncoding: String.Encoding? = nil,
         validateLogin: Bool = true
     ) async throws -> String {
-        let response = try await session.request(
-            url,
-            method: method,
-            parameters: parameters,
-            encoding: URLEncoding.default,
+        try await perform(
+            url, method, parameters,
             headers: headers,
-            interceptor: self.requestInterceptor
-        ).string(stringEncoding)
-        if validateLogin {
-            try validateLoginResponse(response)
-        }
-        return response
+            serializer: StringResponseSerializer(encoding: stringEncoding),
+            validateLogin: validateLogin,
+            responseText: { $0 }
+        ).result.get()
     }
 
     internal func performDecodableRequest<T: Decodable & Sendable>(
@@ -31,28 +26,17 @@ extension BaseHelper {
         headers: HTTPHeaders? = nil,
         validateLogin: Bool = true
     ) async throws -> T {
-        let response = await session.request(
-            url,
-            method: method,
-            parameters: parameters,
-            encoding: URLEncoding.default,
+        let response = try await perform(
+            url, method, parameters,
             headers: headers,
-            interceptor: self.requestInterceptor
-        ).serializingData().response
-
-        if validateLogin,
-            let data = response.data,
-            let text = String(data: data, encoding: .utf8),
-            !text.isEmpty
-        {
-            try validateLoginResponse(text)
-        }
-
+            serializer: DataResponseSerializer(),
+            validateLogin: validateLogin
+        )
         return try DecodableResponseSerializer<T>().serialize(
             request: response.request,
             response: response.response,
-            data: response.data,
-            error: response.error
+            data: response.result.get(),
+            error: nil
         )
     }
 
@@ -64,18 +48,13 @@ extension BaseHelper {
         stringEncoding: String.Encoding? = nil,
         validateLogin: Bool = true
     ) async throws -> DataResponse<String, AFError> {
-        let response = await session.request(
-            url,
-            method: method,
-            parameters: parameters,
-            encoding: URLEncoding.default,
+        try await perform(
+            url, method, parameters,
             headers: headers,
-            interceptor: self.requestInterceptor
-        ).serializingString(encoding: stringEncoding).response
-        if validateLogin {
-            try validateLoginResponse(response)
-        }
-        return response
+            serializer: StringResponseSerializer(encoding: stringEncoding),
+            validateLogin: validateLogin,
+            responseText: { $0 }
+        )
     }
 
     @discardableResult
@@ -83,15 +62,49 @@ extension BaseHelper {
         _ url: String,
         _ method: HTTPMethod = .get,
         _ parameters: [String: String]? = nil,
-        headers: HTTPHeaders? = nil
+        headers: HTTPHeaders? = nil,
+        validateLogin: Bool = true
     ) async throws -> Data {
-        try await session.request(
+        try await perform(
+            url, method, parameters,
+            headers: headers,
+            serializer: DataResponseSerializer(),
+            validateLogin: validateLogin
+        ).result.get()
+    }
+
+    private func perform<Serializer: ResponseSerializer>(
+        _ url: String,
+        _ method: HTTPMethod,
+        _ parameters: [String: String]?,
+        headers: HTTPHeaders?,
+        serializer: Serializer,
+        validateLogin: Bool,
+        responseText: (Serializer.SerializedObject) -> String? = { _ in nil }
+    ) async throws -> DataResponse<Serializer.SerializedObject, AFError> {
+        let response = await session.request(
             url,
             method: method,
             parameters: parameters,
             encoding: URLEncoding.default,
             headers: headers,
-            interceptor: self.requestInterceptor
-        ).data()
+            interceptor: requestInterceptor
+        ).serializingResponse(using: serializer).response
+
+        guard validateLogin, let httpResponse = response.response, let finalURL = httpResponse.url,
+            response.error == nil || response.error?.isResponseSerializationError == true
+        else { return response }
+
+        // 网关可能返回与子系统指定编码不同的页面。没有可用正文时，按响应编码尝试读取。
+        let text =
+            response.value.flatMap(responseText)
+            ?? (try? StringResponseSerializer(encoding: httpResponse.textEncodingName == nil ? .utf8 : nil).serialize(
+                request: response.request,
+                response: httpResponse,
+                data: response.data,
+                error: nil
+            ))
+        try validateLoginResponse(text ?? "", finalURL: finalURL)
+        return response
     }
 }

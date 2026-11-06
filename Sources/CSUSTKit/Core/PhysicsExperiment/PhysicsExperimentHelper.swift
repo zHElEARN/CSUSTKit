@@ -7,11 +7,10 @@ public class PhysicsExperimentHelper: BaseHelper {
 
     // MARK: - Methods
 
-    internal override func validateLoginResponse<T>(_ response: T) throws {
-        guard let html = response as? String else { return }
-        if html.contains("name=\"txtUserName\"") || isWebVpnLoginPage(html) {
-            throw PhysicsExperimentHelperError.notLoggedIn
-        }
+    internal override var notLoggedInError: (any Error)? { PhysicsExperimentHelperError.notLoggedIn }
+
+    internal override func isSubsystemLoginResponse(_ body: String, finalURL: URL) -> Bool {
+        body.contains("name=\"txtUserName\"")
     }
 
     public override func isLoggedIn() async -> Bool {
@@ -208,6 +207,6 @@ public class PhysicsExperimentHelper: BaseHelper {
 
     /// 登出当前账号
     public func logout() async throws {
-        try await performDataRequest(factory.make(.physicsExperiment, "/logout.aspx"))
+        try await performDataRequest(factory.make(.physicsExperiment, "/logout.aspx"), validateLogin: false)
     }
 }

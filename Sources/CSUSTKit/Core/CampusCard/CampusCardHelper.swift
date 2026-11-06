@@ -10,11 +10,10 @@ public class CampusCardHelper: BaseHelper {
         return (try? await getProfile()) != nil
     }
 
-    internal override func validateLoginResponse<T>(_ response: T) throws {
-        guard let html = response as? String else { return }
-        if html.contains("\"code\":401") || html.contains("\"code\":400") || isWebVpnLoginPage(html) {
-            throw CampusCardHelperError.notLoggedIn
-        }
+    internal override var notLoggedInError: (any Error)? { CampusCardHelperError.notLoggedIn }
+
+    internal override func isSubsystemLoginResponse(_ body: String, finalURL: URL) -> Bool {
+        body.contains("\"code\":401") || body.contains("\"code\":400")
     }
 
     private struct BaseResponse<T: Codable & Sendable>: Codable, Sendable {
@@ -210,7 +209,10 @@ public class CampusCardHelper: BaseHelper {
 
     /// 登出
     public func logout() async throws {
-        try await performDataRequest(factory.make(.campusCard, "/berserker-base/redirect?type=logout&synjones-auth=\(token ?? "")&loginFrom=h5&synAccessSource=h5"))
+        try await performDataRequest(
+            factory.make(.campusCard, "/berserker-base/redirect?type=logout&synjones-auth=\(token ?? "")&loginFrom=h5&synAccessSource=h5"),
+            validateLogin: false
+        )
         // 以防万一
         token = nil
     }
