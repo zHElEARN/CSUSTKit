@@ -151,7 +151,7 @@ public class SSOHelper: BaseHelper {
     /// 获取登录用户信息
     /// - Throws: `SSOHelperError`
     /// - Returns: 用户信息
-    public func getLoginUser() async throws -> Profile {
+    public func getProfile() async throws -> Profile {
         let response: LoginUserResponse = try await performDecodableRequest(factory.make(.ehall, "/getLoginUser"))
         guard let user = response.data else {
             throw SSOHelperError.notLoggedIn
@@ -227,6 +227,6 @@ public class SSOHelper: BaseHelper {
     }
 
     public override func isLoggedIn() async -> Bool {
-        return (try? await getLoginUser()) != nil
+        return (try? await getProfile()) != nil
     }
 }

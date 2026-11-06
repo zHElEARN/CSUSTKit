@@ -75,7 +75,7 @@ private func performSSOLogin(using ssoHelper: SSOHelper) async -> Bool {
                 captcha: captcha
             )
 
-            let user = try await ssoHelper.getLoginUser()
+            let user = try await ssoHelper.getProfile()
             print("")
             print("登录成功")
             print("姓名: \(user.userName)")
