@@ -81,6 +81,7 @@ public class SSOHelper: BaseHelper {
 
     /// 登录统一身份认证
     /// - Parameters:
+    ///   - loginForm: 登录表单
     ///   - username: 用户名
     ///   - password: 密码
     ///   - captcha: 验证码
