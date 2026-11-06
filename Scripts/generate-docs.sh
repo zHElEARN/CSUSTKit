@@ -1,14 +1,13 @@
 #!/bin/bash
+set -e
 
-mkdir -p CSUSTKit.docc
+cd "$(dirname "$0")/.."
 
-rm -rf docs/
+swift package --allow-writing-to-directory docs \
+    generate-documentation --target CSUSTKit \
+    --transform-for-static-hosting --output-path docs
 
-swift build --target CSUSTKit \
-    -Xswiftc -emit-symbol-graph \
-    -Xswiftc -emit-symbol-graph-dir -Xswiftc .build
-
-xcrun docc convert CSUSTKit.docc \
-    --additional-symbol-graph-dir .build \
-    --output-path ./docs \
-    --transform-for-static-hosting
+if [[ ! -s docs/data/documentation/csustkit.json ]]; then
+    echo "DocC did not generate the CSUSTKit module page." >&2
+    exit 1
+fi

@@ -24,6 +24,7 @@ let package = Package(
         .package(url: "https://github.com/scinfu/SwiftSoup.git", from: "2.8.8"),
         .package(url: "https://github.com/juri/dotenvy.git", from: "0.3.0"),
         .package(url: "https://github.com/krzyzanowskim/CryptoSwift.git", from: "1.8.4"),
+        .package(url: "https://github.com/swiftlang/swift-docc-plugin", from: "1.4.6"),
     ],
     targets: [
         .target(
