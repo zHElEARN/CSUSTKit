@@ -3,7 +3,7 @@ import Foundation
 
 /// 校园卡助手
 public class CampusCardHelper: BaseHelper {
-    // 身份令牌
+    /// 身份令牌
     public var token: String?
 
     public override func isLoggedIn() async -> Bool {
