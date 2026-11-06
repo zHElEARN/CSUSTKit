@@ -13,3 +13,5 @@ if [[ ! -s docs/data/documentation/csustkit.json ]]; then
     echo "DocC did not generate the CSUSTKit module page." >&2
     exit 1
 fi
+
+cp Site/index.html docs/index.html
