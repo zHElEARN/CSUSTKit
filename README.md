@@ -33,19 +33,6 @@ dependencies: [
 3. 在搜索框中输入 `https://github.com/zHElEARN/CSUSTKit.git`
 4. 选择 `CSUSTKit` 并点击 `Add Package`
 
-### CocoaPods
-
-> [!WARNING]
-> 本项目已不再向 CocoaPods 官方源发布新版本，强烈推荐使用 **Swift Package Manager** 进行集成。
->
-> 如果您仍需使用 CocoaPods，请通过指定 Git 仓库的方式引入。
-
-将以下行添加到您的 `Podfile` 中：
-
-```ruby
-pod 'CSUSTKit', :git => 'https://github.com/zHElEARN/CSUSTKit.git'
-```
-
 ## 使用指南
 
 完整的 API 文档：
