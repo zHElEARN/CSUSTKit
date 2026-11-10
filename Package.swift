@@ -5,7 +5,7 @@ import PackageDescription
 let package = Package(
     name: "CSUSTKit",
     platforms: [
-        .macOS(.v10_15),
+        .macOS(.v12),
         .iOS(.v13),
     ],
     products: [
@@ -22,7 +22,6 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/Alamofire/Alamofire.git", .upToNextMajor(from: "5.10.2")),
         .package(url: "https://github.com/scinfu/SwiftSoup.git", from: "2.8.8"),
-        .package(url: "https://github.com/juri/dotenvy.git", from: "0.3.0"),
         .package(url: "https://github.com/krzyzanowskim/CryptoSwift.git", from: "1.8.4"),
         .package(url: "https://github.com/swiftlang/swift-docc-plugin", from: "1.4.6"),
     ],
@@ -38,18 +37,12 @@ let package = Package(
         ),
         .executableTarget(
             name: "CSUSTKitExample",
-            dependencies: [
-                "CSUSTKit",
-                .product(name: "DotEnvy", package: "dotenvy"),
-            ],
+            dependencies: ["CSUSTKit"],
             path: "Examples"
         ),
         .testTarget(
             name: "CSUSTKitTests",
-            dependencies: [
-                "CSUSTKit",
-                .product(name: "DotEnvy", package: "dotenvy"),
-            ],
+            dependencies: ["CSUSTKit"],
             path: "Tests"
         ),
     ]

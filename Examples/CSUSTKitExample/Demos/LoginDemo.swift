@@ -1,6 +1,5 @@
 import Alamofire
 import CSUSTKit
-import DotEnvy
 import Foundation
 
 func runLoginDemo(session: Session) async {
@@ -41,11 +40,9 @@ private func performSSOLogin(using ssoHelper: SSOHelper) async -> Bool {
             print("")
             print("=== 统一认证登录 ===")
 
-            let environment = try? DotEnvironment.make()
-
             let loginForm = try await ssoHelper.getLoginForm()
             let username =
-                if let username = environment?["CSUST_AUTHSERVER_USERNAME"] {
+                if let username = LocalEnvironment.value(for: "CSUST_AUTHSERVER_USERNAME") {
                     username
                 } else {
                     promptNonEmpty("请输入用户名")
@@ -63,7 +60,7 @@ private func performSSOLogin(using ssoHelper: SSOHelper) async -> Bool {
             }
 
             let password =
-                if let password = environment?["CSUST_AUTHSERVER_PASSWORD"] {
+                if let password = LocalEnvironment.value(for: "CSUST_AUTHSERVER_PASSWORD") {
                     password
                 } else {
                     promptNonEmpty("请输入密码")
