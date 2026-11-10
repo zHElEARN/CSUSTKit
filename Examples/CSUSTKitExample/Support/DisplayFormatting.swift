@@ -1,13 +1,6 @@
 import CSUSTKit
 import Foundation
 
-struct ClassroomQuery {
-    let campus: Campus
-    let week: Int
-    let dayOfWeek: DayOfWeek
-    let section: Int
-}
-
 func printMoocCourses(_ courses: [MoocHelper.Course]) {
     guard !courses.isEmpty else {
         print("暂无课程数据。")
@@ -130,19 +123,16 @@ func printEducationCourses(_ courses: [EduHelper.Course]) {
     }
 }
 
-func printAvailableClassrooms(_ classrooms: [String], query: ClassroomQuery) {
-    let campus = query.campus.displayName
-    let dayOfWeek = displayDayOfWeek(query.dayOfWeek)
-
-    guard !classrooms.isEmpty else {
-        print("\(campus) 第\(query.week)周 \(dayOfWeek) 第\(query.section)大节暂无空闲教室。")
+func printClassroomSchedule(_ schedule: [EduHelper.ClassroomScheduleSession], campus: Campus) {
+    guard !schedule.isEmpty else {
+        print("\(campus.displayName)在所选周次暂无排课。")
         return
     }
 
     print("")
-    print("\(campus) 第\(query.week)周 \(dayOfWeek) 第\(query.section)大节空闲教室:")
-    for (index, classroom) in classrooms.enumerated() {
-        print("\(index + 1). \(classroom)")
+    print("\(campus.displayName)教室课表（\(schedule.count) 条排课）")
+    for entry in schedule {
+        print("\(entry.classroom) | \(displayDayOfWeek(entry.dayOfWeek)) 第\(entry.startSection)-\(entry.endSection)节 | 周次 \(displayWeeks(entry.weeks)) | \(entry.courseLabel)")
     }
 }
 

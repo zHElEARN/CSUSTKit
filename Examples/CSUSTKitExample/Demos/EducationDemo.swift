@@ -8,7 +8,7 @@ func runEducationMenu(using eduHelper: EduHelper) async {
         print("2. 查看考试安排")
         print("3. 查看课程成绩")
         print("4. 查看课程表")
-        print("5. 查看空闲教室")
+        print("5. 查看教室课表")
         print("0. 返回上一级")
 
         switch prompt("请选择操作") {
@@ -42,14 +42,9 @@ func runEducationMenu(using eduHelper: EduHelper) async {
             }
         case "5":
             await handleAsyncOperation {
-                let classroomQuery = promptClassroomQuery()
-                let classrooms = try await eduHelper.getAvailableClassrooms(
-                    campus: classroomQuery.campus,
-                    week: classroomQuery.week,
-                    dayOfWeek: classroomQuery.dayOfWeek,
-                    section: classroomQuery.section
-                )
-                printAvailableClassrooms(classrooms, query: classroomQuery)
+                let campus = promptCampus()
+                let schedule = try await eduHelper.getClassroomSchedule(campus: campus)
+                printClassroomSchedule(schedule, campus: campus)
             }
         case "0":
             return
@@ -57,28 +52,4 @@ func runEducationMenu(using eduHelper: EduHelper) async {
             print("输入无效，请重新选择。")
         }
     }
-}
-
-private func promptClassroomQuery() -> ClassroomQuery {
-    let campus = promptCampus()
-    let week = promptInt("请输入周次", validRange: 1...30)
-    let dayNumber = promptInt("请输入星期（1-7）", validRange: 1...7)
-    let section = promptInt("请输入大节（1-5）", validRange: 1...5)
-
-    let dayOfWeekMap: [Int: DayOfWeek] = [
-        1: .monday,
-        2: .tuesday,
-        3: .wednesday,
-        4: .thursday,
-        5: .friday,
-        6: .saturday,
-        7: .sunday,
-    ]
-
-    return ClassroomQuery(
-        campus: campus,
-        week: week,
-        dayOfWeek: dayOfWeekMap[dayNumber] ?? .monday,
-        section: section
-    )
 }

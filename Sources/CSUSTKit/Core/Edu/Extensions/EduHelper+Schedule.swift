@@ -3,30 +3,22 @@ import Foundation
 import SwiftSoup
 
 extension EduHelper {
-    private func parseDate(date: String) throws -> ([Int], [Int]) {
-        enum WeekType: String, CaseIterable {
-            case single = "(单周)"
-            case double = "(双周)"
-            case all = "(周)"
-        }
-        var weekType: WeekType? = nil
-        for type in WeekType.allCases {
-            if date.contains(type.rawValue) {
-                weekType = type
-                break
+    internal enum ScheduleWeekType: String, CaseIterable {
+        case single = "单周"
+        case double = "双周"
+        case all = "周"
+
+        func includes(_ week: Int) -> Bool {
+            switch self {
+            case .single: return week % 2 != 0
+            case .double: return week % 2 == 0
+            case .all: return true
             }
         }
-        guard let weekType = weekType else {
-            throw EduHelperError.courseScheduleRetrievalFailed("日期中周类型无效: \(date)")
-        }
-        let parts = date.components(separatedBy: weekType.rawValue)
-        guard parts.count == 2 else {
-            throw EduHelperError.courseScheduleRetrievalFailed("日期格式无效: \(date)")
-        }
-        let weekPart = parts[0]
-        let sectionPart = parts[1].trimmingCharacters(in: CharacterSet(charactersIn: "[]节"))
+    }
+
+    internal func parseScheduleWeeks(_ weekPart: String, type: ScheduleWeekType) throws -> [Int] {
         var weeks: [Int] = []
-        var sections: [Int] = []
         for weekSection in weekPart.components(separatedBy: ",") {
             if weekSection.contains("-") {
                 let rangeParts = weekSection.components(separatedBy: "-")
@@ -38,14 +30,7 @@ extension EduHelper {
                 if startWeek > endWeek {
                     throw EduHelperError.courseScheduleRetrievalFailed("起始周 \(startWeek) 大于结束周 \(endWeek)")
                 }
-                switch weekType {
-                case .single:
-                    weeks.append(contentsOf: (startWeek...endWeek).filter { $0 % 2 != 0 })
-                case .double:
-                    weeks.append(contentsOf: (startWeek...endWeek).filter { $0 % 2 == 0 })
-                case .all:
-                    weeks.append(contentsOf: startWeek...endWeek)
-                }
+                weeks.append(contentsOf: (startWeek...endWeek).filter(type.includes))
             } else {
                 if let week = Int(weekSection) {
                     weeks.append(week)
@@ -54,6 +39,20 @@ extension EduHelper {
                 }
             }
         }
+        return weeks
+    }
+
+    private func parseDate(date: String) throws -> ([Int], [Int]) {
+        guard let weekType = ScheduleWeekType.allCases.first(where: { date.contains("(\($0.rawValue))") }) else {
+            throw EduHelperError.courseScheduleRetrievalFailed("日期中周类型无效: \(date)")
+        }
+        let parts = date.components(separatedBy: "(\(weekType.rawValue))")
+        guard parts.count == 2 else {
+            throw EduHelperError.courseScheduleRetrievalFailed("日期格式无效: \(date)")
+        }
+        let weeks = try parseScheduleWeeks(parts[0], type: weekType)
+        let sectionPart = parts[1].trimmingCharacters(in: CharacterSet(charactersIn: "[]节"))
+        var sections: [Int] = []
         for section in sectionPart.components(separatedBy: "-") {
             guard let sectionNumber = Int(section) else {
                 throw EduHelperError.courseScheduleRetrievalFailed("节次格式无效: \(section)")
