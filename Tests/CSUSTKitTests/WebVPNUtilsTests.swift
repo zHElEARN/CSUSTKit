@@ -13,7 +13,6 @@ struct WebVPNUtilsTests {
     }
 
     @Test(
-        "加密再解密可还原原始 URL",
         arguments: [
             "https://www.csust.edu.cn/",
             "https://jwc.csust.edu.cn/jwglxt/xtgl/index_initMenu.html?flag=1",
