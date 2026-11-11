@@ -67,21 +67,15 @@ public enum ElectricityUtils {
             let nextBucketStart = Int(floor(Double(i + 1) * bucketSize)) + 1
             let nextBucketEnd = min(Int(floor(Double(i + 2) * bucketSize)) + 1, dataCount)
 
+            let nextCount = Double(nextBucketEnd - nextBucketStart)
             var avgX: Double = 0
             var avgY: Double = 0
-
-            if nextBucketStart < dataCount {
-                let nextCount = Double(nextBucketEnd - nextBucketStart)
-                for j in nextBucketStart..<nextBucketEnd {
-                    avgX += records[j].date.timeIntervalSince1970
-                    avgY += records[j].electricity
-                }
-                avgX /= nextCount
-                avgY /= nextCount
-            } else {
-                avgX = records[dataCount - 1].date.timeIntervalSince1970
-                avgY = records[dataCount - 1].electricity
+            for j in nextBucketStart..<nextBucketEnd {
+                avgX += records[j].date.timeIntervalSince1970
+                avgY += records[j].electricity
             }
+            avgX /= nextCount
+            avgY /= nextCount
 
             let pointA = records[lastSelectedStep]
             let pointAX = pointA.date.timeIntervalSince1970
