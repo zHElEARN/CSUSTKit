@@ -44,13 +44,13 @@ extension EduHelper {
             guard let grade = Int(gradeString) else {
                 throw EduHelperError.courseGradesRetrievalFailed("成绩格式无效: \(gradeString)")
             }
-            let gradeDetailUrl = try cols[5].select("a").first()?.attr("href").trim()
-            guard var gradeDetailUrl = gradeDetailUrl else {
+            let gradeDetailURL = try cols[5].select("a").first()?.attr("href").trim()
+            guard var gradeDetailURL = gradeDetailURL else {
                 throw EduHelperError.courseGradesRetrievalFailed("未找到成绩详情URL")
             }
 
-            gradeDetailUrl =
-                gradeDetailUrl
+            gradeDetailURL =
+                gradeDetailURL
                 .replacingOccurrences(of: "javascript:openWindow('/", with: factory.make(.education, "/"))
                 .replacingOccurrences(of: "',700,500)", with: "")
 
@@ -83,7 +83,7 @@ extension EduHelper {
                 courseName: courseName,
                 groupName: groupName,
                 grade: grade,
-                gradeDetailUrl: gradeDetailUrl,
+                gradeDetailURL: gradeDetailURL,
                 studyMode: studyMode,
                 gradeIdentifier: gradeIdentifier,
                 credit: credit,

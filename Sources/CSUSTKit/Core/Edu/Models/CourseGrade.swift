@@ -12,7 +12,7 @@ extension EduHelper {
         /// 成绩
         public let grade: Int
         /// 详细成绩链接
-        public let gradeDetailUrl: String
+        public let gradeDetailURL: String
         /// 修读方式
         public let studyMode: String
         /// 成绩标识
@@ -42,7 +42,7 @@ extension EduHelper {
             courseName: String,
             groupName: String,
             grade: Int,
-            gradeDetailUrl: String,
+            gradeDetailURL: String,
             studyMode: String,
             gradeIdentifier: String,
             credit: Double,
@@ -60,7 +60,7 @@ extension EduHelper {
             self.courseName = courseName
             self.groupName = groupName
             self.grade = grade
-            self.gradeDetailUrl = gradeDetailUrl
+            self.gradeDetailURL = gradeDetailURL
             self.studyMode = studyMode
             self.gradeIdentifier = gradeIdentifier
             self.credit = credit

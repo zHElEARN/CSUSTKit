@@ -18,7 +18,7 @@ extension CampusCardHelper {
         /// 学号
         public let sno: String
         /// 卡号
-        public let cardId: String
+        public let cardID: String
         /// 卡账户
         public let cardAccount: String
         /// 性别
@@ -48,7 +48,7 @@ extension CampusCardHelper {
         /// 状态标识
         public let flag: String
         /// 用户ID
-        public let userId: Int
+        public let userID: Int
         /// 证件号码
         public let idNumber: String
         /// 证件名称
@@ -58,7 +58,38 @@ extension CampusCardHelper {
         /// 备注信息
         public let remark: String
 
-        public init(id: Int, account: String, name: String, avatar: String, email: String?, mobile: String?, userType: String, sno: String, cardId: String, cardAccount: String, sex: Int, countryCode: String, nationCode: String, politicsStatusCode: String, identityCode: String, campusCode: String, departmentCode: String, departmentName: String, professionCode: String, professionName: String, classCode: String, className: String, flag: String, userId: Int, idNumber: String, identityName: String, identityExpDate: String, remark: String) {
+        enum CodingKeys: String, CodingKey {
+            case id
+            case account
+            case name
+            case avatar
+            case email
+            case mobile
+            case userType
+            case sno
+            case cardID = "cardId"
+            case cardAccount
+            case sex
+            case countryCode
+            case nationCode
+            case politicsStatusCode
+            case identityCode
+            case campusCode
+            case departmentCode
+            case departmentName
+            case professionCode
+            case professionName
+            case classCode
+            case className
+            case flag
+            case userID = "userId"
+            case idNumber
+            case identityName
+            case identityExpDate
+            case remark
+        }
+
+        public init(id: Int, account: String, name: String, avatar: String, email: String?, mobile: String?, userType: String, sno: String, cardID: String, cardAccount: String, sex: Int, countryCode: String, nationCode: String, politicsStatusCode: String, identityCode: String, campusCode: String, departmentCode: String, departmentName: String, professionCode: String, professionName: String, classCode: String, className: String, flag: String, userID: Int, idNumber: String, identityName: String, identityExpDate: String, remark: String) {
             self.id = id
             self.account = account
             self.name = name
@@ -67,7 +98,7 @@ extension CampusCardHelper {
             self.mobile = mobile
             self.userType = userType
             self.sno = sno
-            self.cardId = cardId
+            self.cardID = cardID
             self.cardAccount = cardAccount
             self.sex = sex
             self.countryCode = countryCode
@@ -82,7 +113,7 @@ extension CampusCardHelper {
             self.classCode = classCode
             self.className = className
             self.flag = flag
-            self.userId = userId
+            self.userID = userID
             self.idNumber = idNumber
             self.identityName = identityName
             self.identityExpDate = identityExpDate
