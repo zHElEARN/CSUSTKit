@@ -90,7 +90,7 @@ public class MoocHelper: BaseHelper {
                 .replacingOccurrences(of: "window.open('../homepage/course/course_index.jsp?courseId=", with: "")
                 .replacingOccurrences(of: "','manage_course')", with: "")
 
-            if mode == .webVpn {
+            if mode == .webVPN {
                 id = id.replacingOccurrences(of: "var vpn_return;eval(vpn_rewrite_js((function () { ", with: "")
                     .replacingOccurrences(of: " }).toString().slice(14, -2), 2));return vpn_return;", with: "")
             }

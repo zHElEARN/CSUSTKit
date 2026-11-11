@@ -27,7 +27,7 @@ public struct URLFactory {
         switch mode {
         case .direct:
             return "\(domain.scheme)://\(domain.directHost)\(safePath)"
-        case .webVpn:
+        case .webVPN:
             return "\(vpnBase)/\(domain.scheme)/\(prefix)\(domain.vpnHex)\(safePath)"
         }
     }

@@ -62,7 +62,7 @@ public class ChaoxingHelper: BaseHelper {
 
             let rawIconURL = try iconElement.attr("src")
             let iconURL: String
-            if mode == .webVpn {
+            if mode == .webVPN {
                 guard let url = URL(string: "https:" + rawIconURL) else {
                     throw ChaoxingHelperError.assignmentsRetrievalFailed("作业图标链接格式异常: \(rawIconURL)")
                 }
@@ -75,7 +75,7 @@ public class ChaoxingHelper: BaseHelper {
 
             let rawDetailURL = try itemElement.attr("data")
             let detailURL: String
-            if mode == .webVpn {
+            if mode == .webVPN {
                 guard let url = URL(string: rawDetailURL) else {
                     throw ChaoxingHelperError.assignmentsRetrievalFailed("作业详情链接格式异常: \(rawDetailURL)")
                 }

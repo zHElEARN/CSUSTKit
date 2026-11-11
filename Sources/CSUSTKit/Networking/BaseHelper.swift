@@ -20,12 +20,12 @@ public class BaseHelper {
 
     internal final func validateLoginResponse(_ body: String, finalURL: URL) throws {
         guard let error = notLoggedInError else { return }
-        if (mode == .webVpn && isWebVpnLoginPage(body)) || isSubsystemLoginResponse(body, finalURL: finalURL) {
+        if (mode == .webVPN && isWebVPNLoginPage(body)) || isSubsystemLoginResponse(body, finalURL: finalURL) {
             throw error
         }
     }
 
-    private func isWebVpnLoginPage(_ body: String) -> Bool {
+    private func isWebVPNLoginPage(_ body: String) -> Bool {
         body.contains("window.location.href = './start.html")
     }
 

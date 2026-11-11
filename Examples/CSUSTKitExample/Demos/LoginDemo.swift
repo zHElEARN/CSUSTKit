@@ -27,7 +27,7 @@ private func selectConnectionMode() -> ConnectionMode {
         case "1":
             return .direct
         case "2":
-            return .webVpn
+            return .webVPN
         default:
             print("输入无效，请输入 1 或 2。")
         }

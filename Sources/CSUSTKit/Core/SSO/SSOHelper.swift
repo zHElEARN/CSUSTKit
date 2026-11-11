@@ -112,7 +112,7 @@ public class SSOHelper: BaseHelper {
 
         var checkURL: URL = finalURL
 
-        if mode == .webVpn {
+        if mode == .webVPN {
             guard finalURL == URL("https://vpn.csust.edu.cn/enclient/") else {
                 if let responseString = response.value {
                     let document = try SwiftSoup.parse(responseString)
