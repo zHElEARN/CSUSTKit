@@ -18,11 +18,10 @@ extension EduHelper {
         weekdays: ClosedRange<Int>? = nil,
         sections: ClosedRange<Int>? = nil
     ) async throws -> [ClassroomScheduleSession] {
-        let campusID = campus.map { $0 == .yuntang ? "1" : "2" } ?? ""
-        let queryParams = [
+        let queryParams: [String: String] = [
             "xnxqh": academicYearSemester ?? "",
             "skyx": "",
-            "xqid": campusID,
+            "xqid": campus.map { $0 == .yuntang ? "1" : "2" } ?? "",
             "jzwid": "",
             "gnq": "",
             "skjsid": "",
