@@ -1,7 +1,7 @@
 import CryptoSwift
 import Foundation
 
-struct AESUtils {
+enum AESUtils {
     static func randomString(length: Int) -> String {
         let letters = "ABCDEFGHJKMNPQRSTWXYZabcdefhijkmnprstwxyz2345678"
         return String((0..<length).map { _ in letters.randomElement()! })
