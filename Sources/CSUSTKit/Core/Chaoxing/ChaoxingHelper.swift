@@ -68,7 +68,7 @@ public class ChaoxingHelper: BaseHelper {
                 }
                 // 此处图标URL因为被WebVPN网关加密过了，而图片静态资源若透过WebVPN获取则会需要WebVPN的凭据
                 // 这里解密还原原始URL，还原后无需WebVPN凭据即可获取图片
-                iconURL = try WebVPNHelper.decryptURL(url).absoluteString
+                iconURL = try WebVPNUtils.decryptURL(url).absoluteString
             } else {
                 iconURL = "https:" + rawIconURL
             }
@@ -81,7 +81,7 @@ public class ChaoxingHelper: BaseHelper {
                 }
                 // 这里作业详细URL未被WebVPN网关加密，所以这里需要进行加密
                 // 作业帮相关凭据位于WebVPN网关侧，若直连则作业帮会缺失凭据，进入登录页面
-                detailURL = try WebVPNHelper.encryptURL(url).absoluteString
+                detailURL = try WebVPNUtils.encryptURL(url).absoluteString
             } else {
                 detailURL = rawDetailURL
             }

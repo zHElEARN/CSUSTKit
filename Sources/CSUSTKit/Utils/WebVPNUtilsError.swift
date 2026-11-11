@@ -1,7 +1,7 @@
 import Foundation
 
 /// WebVPN 相关错误
-public enum WebVPNHelperError: Error, LocalizedError {
+public enum WebVPNUtilsError: Error, LocalizedError {
     /// URL加密失败
     case urlEncryptionFailed(String)
     /// URL解密失败

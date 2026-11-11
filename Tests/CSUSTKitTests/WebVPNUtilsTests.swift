@@ -2,10 +2,10 @@ import CSUSTKit
 import Foundation
 import Testing
 
-struct WebVPNHelperTests {
+struct WebVPNUtilsTests {
     @Test func encryptedHostMatchesReferenceVector() throws {
         let url = try #require(URL(string: "https://www.csust.edu.cn/"))
-        let encrypted = try WebVPNHelper.encryptURL(url)
+        let encrypted = try WebVPNUtils.encryptURL(url)
 
         #expect(encrypted.scheme == "https")
         #expect(encrypted.host == "vpn.csust.edu.cn")
@@ -23,7 +23,7 @@ struct WebVPNHelperTests {
     )
     func roundTrip(urlString: String) throws {
         let original = try #require(URL(string: urlString))
-        let decrypted = try WebVPNHelper.decryptURL(WebVPNHelper.encryptURL(original))
+        let decrypted = try WebVPNUtils.decryptURL(WebVPNUtils.encryptURL(original))
 
         #expect(normalized(decrypted) == normalized(original))
         #expect(decrypted.query == original.query)
@@ -32,8 +32,8 @@ struct WebVPNHelperTests {
 
     @Test func preservesPort() throws {
         let original = try #require(URL(string: "https://edu.csust.edu.cn:443/cas/login"))
-        let encrypted = try WebVPNHelper.encryptURL(original)
-        let decrypted = try WebVPNHelper.decryptURL(encrypted)
+        let encrypted = try WebVPNUtils.encryptURL(original)
+        let decrypted = try WebVPNUtils.decryptURL(encrypted)
 
         #expect(encrypted.path.hasPrefix("/https/webvpn"))
         #expect(decrypted.host == "edu.csust.edu.cn")
@@ -42,21 +42,21 @@ struct WebVPNHelperTests {
 
     @Test func rejectsPathWithoutWebVPNPrefix() throws {
         let url = try #require(URL(string: "https://vpn.csust.edu.cn/https/plainhost/"))
-        #expect(throws: WebVPNHelperError.self) {
-            try WebVPNHelper.decryptURL(url)
+        #expect(throws: WebVPNUtilsError.self) {
+            try WebVPNUtils.decryptURL(url)
         }
     }
 
     @Test func rejectsPathThatIsTooShort() throws {
         let url = try #require(URL(string: "https://vpn.csust.edu.cn/only"))
-        #expect(throws: WebVPNHelperError.self) {
-            try WebVPNHelper.decryptURL(url)
+        #expect(throws: WebVPNUtilsError.self) {
+            try WebVPNUtils.decryptURL(url)
         }
     }
 
     @Test func rejectsURLWithoutHost() {
-        #expect(throws: WebVPNHelperError.self) {
-            try WebVPNHelper.encryptURL(URL(fileURLWithPath: "/tmp/secret.txt"))
+        #expect(throws: WebVPNUtilsError.self) {
+            try WebVPNUtils.encryptURL(URL(fileURLWithPath: "/tmp/secret.txt"))
         }
     }
 }

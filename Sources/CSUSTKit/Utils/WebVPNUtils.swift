@@ -1,8 +1,8 @@
 import CryptoSwift
 import Foundation
 
-/// WebVPN 助手
-public class WebVPNHelper {
+/// WebVPN 工具
+public enum WebVPNUtils {
     private static let host: String = "vpn.csust.edu.cn"
 
     private static let key: String = "CASB2021EnLink!!"
@@ -15,11 +15,11 @@ public class WebVPNHelper {
 
     /// 将原始 URL 加密为 WebVPN URL
     /// - Parameter url: 原始 URL
-    /// - Throws: `WebVPNHelperError`
+    /// - Throws: `WebVPNUtilsError`
     /// - Returns: 加密后的 WebVPN URL
     public static func encryptURL(_ url: URL) throws -> URL {
         guard let host = url.host, let scheme = url.scheme else {
-            throw WebVPNHelperError.urlEncryptionFailed("无法获取主机名/协议")
+            throw WebVPNUtilsError.urlEncryptionFailed("无法获取主机名/协议")
         }
 
         var originalHost = host
@@ -42,7 +42,7 @@ public class WebVPNHelper {
         components.fragment = url.fragment
 
         guard let finalURL = components.url else {
-            throw WebVPNHelperError.urlEncryptionFailed("无法构建加密后的 URL")
+            throw WebVPNUtilsError.urlEncryptionFailed("无法构建加密后的 URL")
         }
 
         return finalURL
@@ -50,20 +50,20 @@ public class WebVPNHelper {
 
     /// 将 WebVPN URL 解密为原始 URL
     /// - Parameter url: WebVPN URL
-    /// - Throws: `WebVPNHelperError`
+    /// - Throws: `WebVPNUtilsError`
     /// - Returns: 原始 URL
     public static func decryptURL(_ url: URL) throws -> URL {
         let pathComponents = url.pathComponents
 
         guard pathComponents.count >= 3 else {
-            throw WebVPNHelperError.urlDecryptionFailed("WebVPN URL 路径格式不正确")
+            throw WebVPNUtilsError.urlDecryptionFailed("WebVPN URL 路径格式不正确")
         }
 
         let scheme = pathComponents[1]
         let encryptedHostComponent = pathComponents[2]
 
         guard encryptedHostComponent.hasPrefix(self.prefix) else {
-            throw WebVPNHelperError.urlDecryptionFailed("未找到指定的 WebVPN 前缀")
+            throw WebVPNUtilsError.urlDecryptionFailed("未找到指定的 WebVPN 前缀")
         }
 
         let encryptedHost = String(encryptedHostComponent.dropFirst(self.prefix.count))
@@ -80,7 +80,7 @@ public class WebVPNHelper {
 
         let prefixToDrop = "/\(pathComponents[1])/\(encryptedHostComponent)"
         guard url.path.hasPrefix(prefixToDrop) else {
-            throw WebVPNHelperError.urlDecryptionFailed("URL 路径与预期格式不符")
+            throw WebVPNUtilsError.urlDecryptionFailed("URL 路径与预期格式不符")
         }
 
         var originalPath = String(url.path.dropFirst(prefixToDrop.count))
@@ -96,7 +96,7 @@ public class WebVPNHelper {
         components.fragment = url.fragment
 
         guard let finalURL = components.url else {
-            throw WebVPNHelperError.urlDecryptionFailed("无法构建解密后的 URL")
+            throw WebVPNUtilsError.urlDecryptionFailed("无法构建解密后的 URL")
         }
 
         return finalURL
@@ -104,7 +104,7 @@ public class WebVPNHelper {
 
     private static func encryptHost(_ text: String) throws -> String {
         guard let textData = text.data(using: .utf8) else {
-            throw WebVPNHelperError.hostEncryptionFailed("无法转换文本为字节数组")
+            throw WebVPNUtilsError.hostEncryptionFailed("无法转换文本为字节数组")
         }
 
         let textBytes = [UInt8](textData)
@@ -121,7 +121,7 @@ public class WebVPNHelper {
         let decryptedBytes = try aes.decrypt(encryptedBytes)
 
         guard let result = String(bytes: decryptedBytes, encoding: .utf8) else {
-            throw WebVPNHelperError.hostDecryptionFailed("解密后无法转换为字符串")
+            throw WebVPNUtilsError.hostDecryptionFailed("解密后无法转换为字符串")
         }
         return result
     }

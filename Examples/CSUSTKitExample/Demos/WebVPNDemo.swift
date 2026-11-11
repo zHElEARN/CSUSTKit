@@ -17,7 +17,7 @@ func runWebVPNMenu() {
                 break
             }
             do {
-                let vpnURL = try WebVPNHelper.encryptURL(originalURL)
+                let vpnURL = try WebVPNUtils.encryptURL(originalURL)
                 print("")
                 print("转换结果:")
                 print(vpnURL)
@@ -31,7 +31,7 @@ func runWebVPNMenu() {
                 break
             }
             do {
-                let originalURL = try WebVPNHelper.decryptURL(vpnURL)
+                let originalURL = try WebVPNUtils.decryptURL(vpnURL)
                 print("")
                 print("转换结果:")
                 print(originalURL)
